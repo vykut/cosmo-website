@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /addresses {
+          allow read, write: if request.auth.uid != null
+    }
+    
+    match /admins {
+      allow read, write: if request.auth.uid != null && request.auth.token.admin
+    }
+
+    match /carts {
+      allow read, write: if request.auth.uid != null
+    }
+
+    match /categories {
+      allow read;
+      allow write: if request.auth.uid != null && request.auth.token.admin
+    }
+
+    match /products {
+      allow read;
+      allow write: if request.auth.uid != null && request.auth.token.admin
+    }
+
+    match /riders {
+      allow read: if request.auth.uid != null && (request.auth.token.admin || request.auth.token.rider)
+      allow write: if request.auth.uid != null && request.auth.token.admin
+    }
+
+    match /stores {
+      allow read;
+      allow write: if request.auth.uid != null && request.auth.token.admin
+    }
+
+    match /users {
+      allow read: if request.auth.uid != null
+      allow write: if request.auth.uid != null && request.auth.token.admin
+    }
+  }
+}
