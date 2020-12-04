@@ -44,7 +44,7 @@ export default function ResetPassword() {
             </form>
             <Grid container justify="flex-end">
                     <Grid item>
-                        <Link href="#" variant="body2" >
+                        <Link href="#" variant="body2" color='primary'>
                         Ai deja cont? Conectează-te
                         </Link>
                     </Grid>

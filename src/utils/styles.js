@@ -31,7 +31,6 @@ export const useStyles = makeStyles((theme) => ({
         backgroundColor: theme.palette.error.main,
     "&:hover": {
       backgroundColor: theme.palette.error.dark,
-      // Reset on touch devices, it doesn't add specificity
       "@media (hover: none)": {
         backgroundColor: theme.palette.error.main
       }

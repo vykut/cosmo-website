@@ -42,8 +42,8 @@ export default function LoginLogic() {
         </Container>
         {/* <form className={classes.form} noValidate> */}
         <ResetPassword></ResetPassword>
-          <SignIn></SignIn>
-          <SignUp></SignUp>
+          {/* <SignIn></SignIn> */}
+          {/* <SignUp></SignUp> */}
         {/* </form> */}
       
       <Box mt={8}>
