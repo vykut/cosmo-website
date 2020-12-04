@@ -1,8 +1,11 @@
 import * as firebase from 'firebase'
-import SignIn from './SignIn';
+import SignIn from './LoginLogic';
+import SignUp from './SignUp';
+
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import '../css/styles.css';
+import LoginLogic from './LoginLogic';
 
 const cosmoTheme = createMuiTheme({
   palette: {
@@ -14,10 +17,12 @@ const cosmoTheme = createMuiTheme({
       main: '#f4c132'
     },
     error: {
-      main: '#de512b'
+      main: '#de512b',
+      contrastText: 'white'
     },
     info: {
-      main: '#894475'
+      main: '#894475',
+      contrastText: 'white'
     },
     succes: {
       main: '#55df99'
@@ -29,7 +34,7 @@ function App() {
   return (
     <Router>
       <ThemeProvider theme={cosmoTheme}>
-        <SignIn></SignIn>
+        <LoginLogic></LoginLogic>
       </ThemeProvider>
     </Router>
   )
