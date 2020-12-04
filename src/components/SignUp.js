@@ -7,22 +7,46 @@ import { useState } from 'react';
 import { useStyles } from '../utils/styles'
 import Divider from '@material-ui/core/Divider';
 import Container from '@material-ui/core/Container';
+import {useAuth} from '../contexts/AuthContext'
 
 
-export default function SignIn() {
+export default function SignUp({setAlert, setLoginLogic}) {
     const classes = useStyles();
+    const { signUp } = useAuth()
+    const [form, setForm] = useState({})
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [name, setName] = useState('')
-    const [surname, setSurname] = useState(false)
-    const [phone, setPhone] = useState('')
+    const onChangeForField = fieldName => ({ target }) => setForm(state => ({ ...state, [fieldName]: target.value }));
+    
+    async function handleSubmit(e) {
+        e.preventDefault()
+        setAlert({})
 
+        if(form.password !== form.repeatPassword) {
+            setError('Parolele trebuie să coincidă')
+            return
+        }
+        if(form.password.length < 6) {
+            setError('Parola trebuie conțină minim 6 caractere')
+            return
+        }
+        setError('')
+
+        try {
+            setLoading(true)
+            await signUp(form)
+            setAlert({severity: 'success', message: 'Contul a fost creat cu succes.'})
+        } catch (error) {
+            setAlert({severity: 'error', message: error.message})
+        }
+        setLoading(false)
+    }
 
     return (
-        <Container component="main" maxWidth="md">
-            <form className={classes.form} >
+        
+        <Container component="main" maxWidth="md" className={classes.form}>
+            <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
                     <Grid item sm container spacing={2} direction='column'>
                         <Grid item>
@@ -34,6 +58,7 @@ export default function SignIn() {
                                 fullWidth
                                 id="firstName"
                                 label="Prenume"
+                                onChange={onChangeForField('firstName')}
                                 autoFocus
                             />
                         </Grid>
@@ -46,6 +71,7 @@ export default function SignIn() {
                                 label="Nume"
                                 name="phone"
                                 autoComplete="lname"
+                                onChange={onChangeForField('lastName')}
                             />
                         </Grid>
                         <Grid item>
@@ -57,11 +83,12 @@ export default function SignIn() {
                                 label="Telefon"
                                 name="phone"
                                 autoComplete="phone"
+                                onChange={onChangeForField('phone')}
                             />
                         </Grid>
                     </Grid>
                     <Grid item >
-                        <Divider className={classes.divider} orientation='vertical' flexItem />
+                        <Divider className={classes.divider} orientation='vertical'  />
                     </Grid>
                     <Grid item sm container direction='column' spacing={2}>
                         <Grid item>
@@ -73,6 +100,7 @@ export default function SignIn() {
                                 label="Email"
                                 name="email"
                                 autoComplete="email"
+                                onChange={onChangeForField('email')}
                             />
                         </Grid>
                         <Grid item>
@@ -85,6 +113,8 @@ export default function SignIn() {
                                 type="password"
                                 id="password"
                                 autoComplete="new-password"
+                                onChange={onChangeForField('password')}
+                                error={error !== ''}
                             />
                         </Grid>
                         <Grid item>
@@ -92,11 +122,14 @@ export default function SignIn() {
                                 variant="outlined"
                                 required
                                 fullWidth
-                                name="repeat-password"
+                                name="repeatPassword"
                                 label="Repetă parola"
                                 type="password"
                                 id="repeat-password"
                                 autoComplete="new-password"
+                                onChange={onChangeForField('repeatPassword')}
+                                error={error !== ''}
+                                helperText={error}
                             />
                         </Grid>
                     </Grid>
@@ -108,14 +141,15 @@ export default function SignIn() {
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={loading}
                     >
                         Creează cont
                     </Button>
                     <Grid container justify="flex-end">
                         <Grid item>
-                            <Link href="#" variant="body2">
+                            <Link href="#" variant="body2" onClick={() => {setLoginLogic('sign-in'); setAlert({})}}>
                                 Ai deja cont? Conectează-te
-                        </Link>
+                            </Link>
                         </Grid>
                     </Grid>
                 </Container>

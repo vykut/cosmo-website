@@ -20,12 +20,10 @@ exports.editPersonalData = functions
       }
     }
 
-    if (data.name && data.surname && data.phone) {
+    if (data.firstName && data.lastName && data.phone) {
       return admin.firestore().collection('users').doc(context.auth.uid).set({
-        name: data.name,
-        surname: data.surname,
-        phone: data.phone,
-      })
+        ...data
+      }, { merge: true })
         .then(() => {
           console.log(`S-au modificat datele personale ale userului ${context.auth.uid} cu succes`)
           return {
@@ -464,9 +462,9 @@ exports.cartProductTotal = functions
         }
       })
         .then(() => {
-          console.log(`S-a updatat totalul pentru cosul utilizatorului ${context.params.orderID}.`)
+          console.log(`S-a actualizat totalul pentru cosul utilizatorului ${context.params.orderID}.`)
           return {
-            result: `Totalul cosului a fost updatat cu succes.`
+            result: `Totalul cosului a fost actualizat cu succes.`
           }
         })
     }
@@ -506,9 +504,9 @@ exports.orderProductTotal = functions
         }
       })
         .then(() => {
-          console.log(`S-a updatat totalul pentru comanda ${context.params.orderID}.`)
+          console.log(`S-a actualizat totalul pentru comanda ${context.params.orderID}.`)
           return {
-            result: `Totalul comenzii a fost updatat cu succes.`
+            result: `Totalul comenzii a fost actualizat cu succes.`
           }
         })
     }
@@ -516,13 +514,11 @@ exports.orderProductTotal = functions
 
 exports.deleteAccount = functions
   .region('europe-west1')
-  .https.onCall((data, context) => {
-    return admin.auth().deleteUser(context.auth.uid)
+  .auth.user()
+  .onDelete(user => {
+    return admin.firestore().collection('users').doc(user.uid).delete()
       .then(() => {
-        return admin.firestore().collection('users').doc(context.auth.uid).delete()
-      })
-      .then(() => {
-        console.log(`Userul ${context.auth.uid} a fost sters cu succes`)
+        console.log(`Userul ${user.uid} a fost sters cu succes`)
         return {
           result: `Userul a fost sters cu succes`
         }

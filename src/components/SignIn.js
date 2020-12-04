@@ -1,24 +1,39 @@
 import React from 'react'
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import { useStyles } from '../utils/styles'
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
+import {useAuth} from '../contexts/AuthContext'
 
-export default function SignIn() {
+
+export default function SignIn({setAlert, setLoginLogic}) {
     const classes = useStyles();
+    const { signIn } = useAuth()
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [remember, setRemember] = useState(false)
+    const [form, setForm] = useState({})
+    const [loading, setLoading] = useState(false)
+
+    const onChangeForField = fieldName => ({ target }) => setForm(state => ({ ...state, [fieldName]: target.value }));
+
+    async function handleSubmit(e) {
+        e.preventDefault()
+
+        try {
+            setLoading(true)
+            await signIn(form)
+            setAlert({severity: 'success', message: 'Te-ai conectat cu succes.'})
+        } catch (error) {
+            setAlert({severity: 'error', message: error.message})
+        }
+        setLoading(false)
+    } 
 
     return (
         <Container component="main" maxWidth="xs">
-            <form className={classes.form} >
+            <form className={classes.form} onSubmit={handleSubmit}>
                 <TextField
                     variant="outlined"
                     margin="normal"
@@ -29,7 +44,7 @@ export default function SignIn() {
                     name="email"
                     autoComplete="email"
                     autoFocus
-                    onChange={(e) => { setEmail(e.target.email) }}
+                    onChange={onChangeForField('email')}
                 />
                 <TextField
                     variant="outlined"
@@ -41,11 +56,7 @@ export default function SignIn() {
                     type="password"
                     id="password"
                     autoComplete="current-password"
-                    onChange={(e) => { setPassword(e.target.value) }}
-                />
-                <FormControlLabel
-                    control={<Checkbox value="remember" color="primary" onChange={(e) => { setRemember(e.target.checked) }} />}
-                    label="Ține-mă minte"
+                    onChange={onChangeForField('password')}
                 />
                 <Button
                     type="submit"
@@ -53,18 +64,19 @@ export default function SignIn() {
                     variant="contained"
                     color="primary"
                     className={classes.submit}
+                    disabled={loading}
                 >
                     Intră în cont
                 </Button>
                 </form>
                 <Grid container>
                     <Grid item xs>
-                        <Link href="#" variant="body2" color='error'>
+                        <Link href="#" variant="body2" color='error' onClick={() => {setLoginLogic('reset-password'); setAlert({})}}>
                             Ai uitat parola?
                         </Link>
                     </Grid>
                     <Grid item>
-                        <Link href="#" variant="body2" color='primary'>
+                        <Link href="#" variant="body2" color='primary' onClick={() => {setLoginLogic('sign-up'); setAlert({})}}>
                             Nu ai cont? Fă-ți unul acum
                         </Link>
                     </Grid>

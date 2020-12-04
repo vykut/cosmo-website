@@ -20,12 +20,12 @@ export const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(1),
     },
     submit: {
-        
+        margin: theme.spacing(3, 0, 2),
     },
     divider: {
-        background: theme.palette.primary.dark
+        background: theme.palette.primary.main
     },
-    resetPasswordButton : {
+    resetPasswordButton: {
         margin: theme.spacing(3, 0, 2),
         color: theme.palette.error.contrastText,
         backgroundColor: theme.palette.error.main,
@@ -36,4 +36,7 @@ export const useStyles = makeStyles((theme) => ({
       }
     }
     },
+    alert: {
+        margin: theme.spacing(0,1,2),
+    }
 }));

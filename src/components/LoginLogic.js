@@ -9,11 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import websiteAddress from '../utils/constants';
 import logo from '../assets/logo-cosmo-market.svg';
-import {useState} from 'react';
-import {useStyles} from '../utils/styles';
+import { useState, useEffect } from 'react';
+import { useStyles } from '../utils/styles';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import ResetPassword from './ResetPassword';
+import { Alert } from '@material-ui/lab';
 
 function Copyright() {
   return (
@@ -33,22 +34,30 @@ function Copyright() {
 export default function LoginLogic() {
   const classes = useStyles();
 
+  const [alert, setAlert] = useState({
+    message: '',
+    severity: 'error'
+  })
+  const [loginLogic, setLoginLogic] = useState('sign-in')
 
   return (
-    
-      <div className={classes.paper}>
-        <Container  maxWidth="xs">
-          <img src={logo} alt='logo' className={classes.logo} />
-        </Container>
-        {/* <form className={classes.form} noValidate> */}
-        <ResetPassword></ResetPassword>
-          {/* <SignIn></SignIn> */}
-          {/* <SignUp></SignUp> */}
-        {/* </form> */}
-      
+
+    <div className={classes.paper}>
+      <Container maxWidth="xs">
+        <img src={logo} alt='logo' className={classes.logo} />
+        {
+          alert.message && <Alert variant="filled" severity={alert.severity} className={classes.alert}>
+            {alert.message}
+          </Alert>
+        }
+      </Container>
+      {loginLogic === 'sign-in' && <SignIn setAlert={setAlert}  setLoginLogic={setLoginLogic} />}
+      {loginLogic === 'sign-up' && <SignUp setAlert={setAlert}  setLoginLogic={setLoginLogic} />}
+      {loginLogic === 'reset-password' && <ResetPassword setAlert={setAlert}  setLoginLogic={setLoginLogic} />}
+
       <Box mt={8}>
         <Copyright />
       </Box>
-      </div>
+    </div>
   );
 }

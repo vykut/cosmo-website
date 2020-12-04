@@ -1,6 +1,7 @@
 import * as firebase from 'firebase'
 import SignIn from './LoginLogic';
 import SignUp from './SignUp';
+import { AuthProvider } from '../contexts/AuthContext'
 
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
@@ -33,9 +34,11 @@ const cosmoTheme = createMuiTheme({
 function App() {
   return (
     <Router>
-      <ThemeProvider theme={cosmoTheme}>
-        <LoginLogic></LoginLogic>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider theme={cosmoTheme}>
+          <LoginLogic></LoginLogic>
+        </ThemeProvider>
+      </AuthProvider>
     </Router>
   )
 }
