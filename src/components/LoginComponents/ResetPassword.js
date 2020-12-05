@@ -3,14 +3,14 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { useStyles } from '../utils/styles'
+import { useStyles } from '../../utils/styles'
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
 import { Typography } from '@material-ui/core';
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 
-export default function ResetPassword({ setAlert, setLoginLogic }) {
+export default function ResetPassword({ setAlert, setLoginComponent }) {
     const classes = useStyles();
     const { resetPassword } = useAuth()
 
@@ -53,7 +53,7 @@ export default function ResetPassword({ setAlert, setLoginLogic }) {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    classes={{ root: classes.resetPasswordButton }}
+                    className={classes.resetPasswordButton}
                     disabled={loading}
                 >
                     Resetează parola
@@ -61,7 +61,7 @@ export default function ResetPassword({ setAlert, setLoginLogic }) {
             </form>
             <Grid container justify="flex-end">
                 <Grid item>
-                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginLogic('sign-in'); setAlert({}) }}>
+                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent('sign-in'); setAlert({}) }}>
                         Ai deja cont? Conectează-te
                     </Link>
                 </Grid>

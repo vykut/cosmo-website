@@ -4,47 +4,48 @@ import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import { useState } from 'react';
-import { useStyles } from '../utils/styles'
+import { useStyles } from '../../utils/styles'
 import Divider from '@material-ui/core/Divider';
 import Container from '@material-ui/core/Container';
-import {useAuth} from '../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 
-export default function SignUp({setAlert, setLoginLogic}) {
+export default function SignUp({ setAlert, setLoginComponent }) {
     const classes = useStyles();
     const { signUp } = useAuth()
     const [form, setForm] = useState({})
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
+
     const onChangeForField = fieldName => ({ target }) => setForm(state => ({ ...state, [fieldName]: target.value }));
-    
+
     async function handleSubmit(e) {
         e.preventDefault()
         setAlert({})
+        setError('')
 
-        if(form.password !== form.repeatPassword) {
+        if (form.password !== form.repeatPassword) {
             setError('Parolele trebuie să coincidă')
             return
         }
-        if(form.password.length < 6) {
+        if (form.password.length < 6) {
             setError('Parola trebuie conțină minim 6 caractere')
             return
         }
-        setError('')
 
         try {
             setLoading(true)
             await signUp(form)
-            setAlert({severity: 'success', message: 'Contul a fost creat cu succes.'})
+            setAlert({ severity: 'success', message: 'Contul a fost creat cu succes.' })
         } catch (error) {
-            setAlert({severity: 'error', message: error.message})
+            setAlert({ severity: 'error', message: error.message })
         }
         setLoading(false)
     }
 
     return (
-        
+
         <Container component="main" maxWidth="md" className={classes.form}>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
@@ -88,7 +89,7 @@ export default function SignUp({setAlert, setLoginLogic}) {
                         </Grid>
                     </Grid>
                     <Grid item >
-                        <Divider className={classes.divider} orientation='vertical'  />
+                        <Divider className={classes.divider} orientation='vertical' />
                     </Grid>
                     <Grid item sm container direction='column' spacing={2}>
                         <Grid item>
@@ -147,7 +148,7 @@ export default function SignUp({setAlert, setLoginLogic}) {
                     </Button>
                     <Grid container justify="flex-end">
                         <Grid item>
-                            <Link href="#" variant="body2" onClick={() => {setLoginLogic('sign-in'); setAlert({})}}>
+                            <Link href="#" variant="body2" onClick={() => { setLoginComponent('sign-in'); setAlert({}) }}>
                                 Ai deja cont? Conectează-te
                             </Link>
                         </Grid>

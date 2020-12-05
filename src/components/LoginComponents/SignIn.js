@@ -3,13 +3,13 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { useStyles } from '../utils/styles'
+import { useStyles } from '../../utils/styles'
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
-import {useAuth} from '../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 
-export default function SignIn({setAlert, setLoginLogic}) {
+export default function SignIn({setAlert, setLoginComponent}) {
     const classes = useStyles();
     const { signIn } = useAuth()
 
@@ -71,12 +71,12 @@ export default function SignIn({setAlert, setLoginLogic}) {
                 </form>
                 <Grid container>
                     <Grid item xs>
-                        <Link href="#" variant="body2" color='error' onClick={() => {setLoginLogic('reset-password'); setAlert({})}}>
+                        <Link href="#" variant="body2" color='error' onClick={() => {setLoginComponent('reset-password'); setAlert({})}}>
                             Ai uitat parola?
                         </Link>
                     </Grid>
                     <Grid item>
-                        <Link href="#" variant="body2" color='primary' onClick={() => {setLoginLogic('sign-up'); setAlert({})}}>
+                        <Link href="#" variant="body2" color='primary' onClick={() => {setLoginComponent('sign-up'); setAlert({})}}>
                             Nu ai cont? Fă-ți unul acum
                         </Link>
                     </Grid>

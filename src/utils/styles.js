@@ -1,5 +1,27 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, createMuiTheme } from '@material-ui/core/styles';
 
+export const cosmoTheme = createMuiTheme({
+    palette: {
+        primary: {
+            main: '#23adae',
+            contrastText: '#fff'
+        },
+        secondary: {
+            main: '#f4c132'
+        },
+        error: {
+            main: '#de512b',
+            contrastText: '#fff'
+        },
+        info: {
+            main: '#894475',
+            contrastText: '#fff'
+        },
+        succes: {
+            main: '#55df99'
+        }
+    }
+})
 
 export const useStyles = makeStyles((theme) => ({
     paper: {
@@ -8,8 +30,8 @@ export const useStyles = makeStyles((theme) => ({
         flexDirection: 'column',
         alignItems: 'center',
     },
-    logo: {
-        marginBottom: theme.spacing(3),
+    loginLogo: {
+        margin: theme.spacing(3, 0),
         width: '80%',
         marginLeft: 'auto',
         marginRight: 'auto',
@@ -29,14 +51,14 @@ export const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(3, 0, 2),
         color: theme.palette.error.contrastText,
         backgroundColor: theme.palette.error.main,
-    "&:hover": {
-      backgroundColor: theme.palette.error.dark,
-      "@media (hover: none)": {
-        backgroundColor: theme.palette.error.main
-      }
-    }
+        "&:hover": {
+            backgroundColor: theme.palette.error.dark,
+            "@media (hover: none)": {
+                backgroundColor: theme.palette.error.main
+            }
+        }
     },
     alert: {
-        margin: theme.spacing(0,1,2),
-    }
+        margin: theme.spacing(0, 1, 2),
+    },
 }));

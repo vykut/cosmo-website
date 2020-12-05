@@ -41,10 +41,10 @@ export function AuthProvider({children}) {
 
     const value  = {
         currentUser,
-        signUp: signUp,
-        signIn: signIn,
-        resetPassword: resetPassword,
-        signOut: signOut,
+        signUp,
+        signIn,
+        resetPassword,
+        signOut,
     }
 
     return (

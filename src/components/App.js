@@ -1,44 +1,31 @@
 import * as firebase from 'firebase'
-import SignIn from './LoginLogic';
-import SignUp from './SignUp';
 import { AuthProvider } from '../contexts/AuthContext'
-
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/core/styles';
 import '../css/styles.css';
-import LoginLogic from './LoginLogic';
+import LoginLogic from './LoginComponents/LoginLogic';
+import { cosmoTheme } from '../utils/styles';
+import Header from './HeaderComponents/Header';
 
-const cosmoTheme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#23adae',
-      contrastText: 'white'
-    },
-    secondary: {
-      main: '#f4c132'
-    },
-    error: {
-      main: '#de512b',
-      contrastText: 'white'
-    },
-    info: {
-      main: '#894475',
-      contrastText: 'white'
-    },
-    succes: {
-      main: '#55df99'
-    }
-  }
-})
+
+
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ThemeProvider theme={cosmoTheme}>
-          <LoginLogic></LoginLogic>
-        </ThemeProvider>
-      </AuthProvider>
+      <ThemeProvider theme={cosmoTheme}>
+        <AuthProvider>
+          {/* <LoginLogic></LoginLogic> */}
+          <Header />
+          <Switch>
+            <Route path='/' exact>
+              Cosmo Market
+              
+              {/* home */}
+            </Route>
+          </Switch>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   )
 }
