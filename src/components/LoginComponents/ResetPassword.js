@@ -3,11 +3,33 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { useStyles } from '../../utils/styles'
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
 import { Typography } from '@material-ui/core';
 import { useAuth } from '../../contexts/AuthContext'
+import { makeStyles } from '@material-ui/core/styles';
+
+export const useStyles = makeStyles((theme) => ({
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    submit: {
+        margin: theme.spacing(3, 0, 2),
+    },
+    resetPasswordButton: {
+        margin: theme.spacing(3, 0, 2),
+        color: theme.palette.error.contrastText,
+        backgroundColor: theme.palette.error.main,
+        "&:hover": {
+            backgroundColor: theme.palette.error.dark,
+            "@media (hover: none)": {
+                backgroundColor: theme.palette.error.main
+            }
+        }
+    },
+}));
+
 
 
 export default function ResetPassword({ setAlert, setLoginComponent }) {
@@ -16,6 +38,8 @@ export default function ResetPassword({ setAlert, setLoginComponent }) {
 
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
+
+    console.log(classes)
 
     async function handleSubmit(e) {
         e.preventDefault()

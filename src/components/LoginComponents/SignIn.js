@@ -3,13 +3,24 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { useStyles } from '../../utils/styles'
+// import { useStyles } from '../../utils/styles'
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
 import { useAuth } from '../../contexts/AuthContext'
+import { makeStyles } from '@material-ui/core/styles';
+
+export const useStyles = makeStyles((theme) => ({
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    submit: {
+        margin: theme.spacing(3, 0, 2),
+    },
+}));
 
 
-export default function SignIn({setAlert, setLoginComponent}) {
+export default function SignIn({ setAlert, setLoginComponent }) {
     const classes = useStyles();
     const { signIn } = useAuth()
 
@@ -24,12 +35,12 @@ export default function SignIn({setAlert, setLoginComponent}) {
         try {
             setLoading(true)
             await signIn(form)
-            setAlert({severity: 'success', message: 'Te-ai conectat cu succes.'})
+            setAlert({ severity: 'success', message: 'Te-ai conectat cu succes.' })
         } catch (error) {
-            setAlert({severity: 'error', message: error.message})
+            setAlert({ severity: 'error', message: error.message })
         }
         setLoading(false)
-    } 
+    }
 
     return (
         <Container component="main" maxWidth="xs">
@@ -68,20 +79,20 @@ export default function SignIn({setAlert, setLoginComponent}) {
                 >
                     Intră în cont
                 </Button>
-                </form>
-                <Grid container>
-                    <Grid item xs>
-                        <Link href="#" variant="body2" color='error' onClick={() => {setLoginComponent('reset-password'); setAlert({})}}>
-                            Ai uitat parola?
+            </form>
+            <Grid container>
+                <Grid item xs>
+                    <Link href="#" variant="body2" color='error' onClick={() => { setLoginComponent('reset-password'); setAlert({}) }}>
+                        Ai uitat parola?
                         </Link>
-                    </Grid>
-                    <Grid item>
-                        <Link href="#" variant="body2" color='primary' onClick={() => {setLoginComponent('sign-up'); setAlert({})}}>
-                            Nu ai cont? Fă-ți unul acum
-                        </Link>
-                    </Grid>
                 </Grid>
-            
+                <Grid item>
+                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent('sign-up'); setAlert({}) }}>
+                        Nu ai cont? Fă-ți unul acum
+                        </Link>
+                </Grid>
+            </Grid>
+
         </Container>
     )
 }

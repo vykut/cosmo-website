@@ -6,11 +6,13 @@ import Container from '@material-ui/core/Container';
 import websiteAddress from '../../utils/constants';
 import logo from '../../assets/logo-cosmo-market.svg';
 import { useState } from 'react';
-import { useStyles } from '../../utils/styles';
+// import { useStyles } from '../../utils/styles';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import ResetPassword from './ResetPassword';
 import { Alert } from '@material-ui/lab';
+import { makeStyles } from '@material-ui/core/styles';
+
 
 function Copyright() {
   return (
@@ -24,6 +26,25 @@ function Copyright() {
     </Typography>
   );
 }
+
+export const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  loginLogo: {
+    margin: theme.spacing(3, 0),
+    width: '80%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    display: 'block'
+  },
+  alert: {
+    margin: theme.spacing(0, 1, 2),
+  },
+}));
 
 
 

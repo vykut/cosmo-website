@@ -11,7 +11,7 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { Button, useScrollTrigger } from '@material-ui/core';
-import Slide from '@material-ui/core/Slide';
+// import Slide from '@material-ui/core/Slide';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -115,7 +115,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header() {
     const classes = useStyles();
-    const trigger = useScrollTrigger()
+    // const trigger = useScrollTrigger()
 
     const renderSearch = (
         <div className={classes.search}>
@@ -192,18 +192,18 @@ export default function Header() {
         </AppBar>
     );
 
-    const showHeader = (
-        <>
-            {/* <div className={classes.hideAppBar}>
-                <Slide appear={false} direction="down" in={!trigger} >
-                    {appBar}
-                </Slide>
-            </div>
-            <div className={classes.showAppBar}>
-                {appBar}
-            </div> */}
-        </>
-    );
+    // const showHeader = (
+    //     <>
+    //         {/* <div className={classes.hideAppBar}>
+    //             <Slide appear={false} direction="down" in={!trigger} >
+    //                 {appBar}
+    //             </Slide>
+    //         </div>
+    //         <div className={classes.showAppBar}>
+    //             {appBar}
+    //         </div> */}
+    //     </>
+    // );
 
     return (
         <>

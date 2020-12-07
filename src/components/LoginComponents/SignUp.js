@@ -4,10 +4,24 @@ import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import { useState } from 'react';
-import { useStyles } from '../../utils/styles'
+// import { useStyles } from '../../utils/styles'
 import Divider from '@material-ui/core/Divider';
 import Container from '@material-ui/core/Container';
 import { useAuth } from '../../contexts/AuthContext'
+import { makeStyles } from '@material-ui/core/styles';
+
+export const useStyles = makeStyles((theme) => ({
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    submit: {
+        margin: theme.spacing(3, 0, 2),
+    },
+    divider: {
+        background: theme.palette.primary.main
+    },
+}));
 
 
 export default function SignUp({ setAlert, setLoginComponent }) {
