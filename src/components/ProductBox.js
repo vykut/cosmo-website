@@ -32,10 +32,10 @@ const useStyles = makeStyles((theme) => ({
         alignItems: 'stretch',
         justifyContent: 'stretch',
         height: 30,
-
     },
     quantityTypography: {
         color: theme.palette.info.main,
+        maxWidth: 180,
         marginBottom: theme.spacing(1)
     },
     quantityIncrement: {
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
     quantityInput: {
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
-        width: 100,
+        width: 50,
         color: theme.palette.info.main,
         display: 'flex',
         alignContent: 'center',
@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export default function ProductBox() {
+export default function ProductBox({ product }) {
     const classes = useStyles()
     const [isFavorite, setIsFavorite] = useState(false)
     const [quantity, setQuantity] = useState(1)
@@ -125,7 +125,7 @@ export default function ProductBox() {
                         </Typography>
                     </Link>
                 </Badge>
-                <div className={classes.paper}>
+                <div className={classes.paper} style={{ padding: 10 }}>
                     <Typography className={classes.quantityTypography} variant='button'>
                         Cantitate
                         </Typography>

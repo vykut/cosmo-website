@@ -1,13 +1,13 @@
 import { AuthProvider } from '../contexts/AuthContext'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import '../css/styles.css';
 // import { cosmoTheme } from '../utils/styles';
 import Header from './HeaderComponents/Header';
 import Home from './HomeComponents/Home';
 import LoginLogic from './LoginComponents/LoginLogic'
 
-export const cosmoTheme = createMuiTheme({
+export var cosmoTheme = createMuiTheme({
   palette: {
     primary: {
       main: '#23adae',
@@ -29,6 +29,8 @@ export const cosmoTheme = createMuiTheme({
     }
   }
 })
+
+cosmoTheme = responsiveFontSizes(cosmoTheme)
 
 function App() {
   return (

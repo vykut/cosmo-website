@@ -1,62 +1,158 @@
-import { Container, makeStyles } from '@material-ui/core'
+import { Breadcrumbs, Collapse, Container, Divider, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, makeStyles, Paper, Typography } from '@material-ui/core'
 import React, { useEffect, useState, useCallback } from 'react'
-import ProductBox from '../ProductBox'
-
+import ProductsRow from './ProductsRow'
+import HomeIcon from '@material-ui/icons/Home';
+import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
+import LocalBarIcon from '@material-ui/icons/LocalBar';
+import FilterListIcon from '@material-ui/icons/FilterList';
+import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import EuroIcon from '@material-ui/icons/Euro';
+import SmokingRoomsIcon from '@material-ui/icons/SmokingRooms';
+import StoreIcon from '@material-ui/icons/Store';
 
 export const useStyles = makeStyles((theme) => ({
-    home: {
-        marginTop: theme.spacing(2),
+    breadcrumbs: {
+        padding: theme.spacing(2),
+
+    },
+    menu: {
+        width: 320,
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+        borderRadius: 5,
+        margin: theme.spacing(1),
+    },
+    menuContainer: {
+    },
+    menuProductsContainer: {
+        display: 'flex',
+
     },
     productsContainer: {
-        display: 'flex'
+        paddingLeft: theme.spacing(3),
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
     },
-    product: {
-        position: 'relative'
-    }
+    nested: {
+        paddingLeft: theme.spacing(4),
+    },
+    listItem: {
+        // marginTop: theme.spacing(1)
+    },
+
 }))
+
+
 
 
 export default function Home() {
     const classes = useStyles()
 
-    const settings = {
-        dots: true,
-        infinite: false,
-        // speed: 500,
-        slidesToShow: 4,
-        slidesToScroll: 4,
-        initialSlide: 0,
-        responsive: [
-            {
-                breakpoint: 1024,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 3,
-                    infinite: true,
-                    dots: true
+    // to add routing
+    function CosmoBreadcrumbs() {
+        return (
+            <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
+                <Link color="inherit" href="#" >
+                    <StoreIcon />
+                </Link>
+                <Typography color="textPrimary">Acasă</Typography>
+            </Breadcrumbs>
+        );
+    }
+
+    function Filter() {
+        return (
+            <ListItem button>
+                <ListItemIcon>
+                    <FilterListIcon color='secondary' />
+                </ListItemIcon>
+                <ListItemText primary="Filtrare" />
+                {true ? <ExpandLess /> : <ExpandMore />}
+                <Collapse in={true} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                        <ListItem button className={classes.nested}>
+                            <ListItemIcon>
+                                <EuroIcon color='secondary' />
+                            </ListItemIcon>
+                            <ListItemText primary="Preț" />
+                        </ListItem>
+                    </List>
+                </Collapse>
+            </ListItem>
+        )
+    }
+
+    function CosmoSideMenu() {
+        return (
+            <List
+                component='nav'
+                aria-labelledby="nested-list-subheader"
+                subheader={
+                    <ListSubheader style={{ borderRadius: 5 }} component="div" id="nested-list-subheader" color='inherit'>
+                        Categorii
+                    </ListSubheader>
                 }
-            },
-            {
-                breakpoint: 600,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 2,
-                    initialSlide: 2
-                }
-            },
-            {
-                breakpoint: 480,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1
-                }
-            }
-        ]
-    };
+                className={classes.menu}
+            >
+                <Divider />
+                {false && <Filter />}
+                <Divider />
+                <ListItem button className={classes.listItem}>
+                    <ListItemIcon>
+                        <RestaurantMenuIcon color='secondary' />
+                    </ListItemIcon>
+                    <ListItemText primary="Pentru acasă" />
+                </ListItem>
+                <Divider />
+                <ListItem button>
+                    <ListItemIcon>
+                        <LocalBarIcon color='secondary' />
+                    </ListItemIcon>
+                    <ListItemText primary="Alimente" />
+                </ListItem>
+                <Divider />
+                <ListItem button>
+                    <ListItemIcon>
+                        <RestaurantMenuIcon color='secondary' />
+                    </ListItemIcon>
+                    <ListItemText primary="Băuturi" />
+                </ListItem>
+                <Divider />
+                <ListItem button>
+
+                    <ListItemIcon>
+                        <SmokingRoomsIcon color='secondary' />
+                    </ListItemIcon>
+                    <ListItemText primary="Țigări" />
+                </ListItem>
+                <Divider />
+                <ListItem button>
+                    <ListItemIcon>
+                        <RestaurantMenuIcon color='secondary' />
+                    </ListItemIcon>
+                    <ListItemText primary="Alte categorii" />
+                </ListItem>
+
+            </List>
+        )
+    }
+
 
     return (
-        // <Container>
-        <ProductBox />
-        // </Container>
+        <div>
+            <CosmoBreadcrumbs />
+            <div className={classes.menuProductsContainer}>
+                <div className={classes.menuContainer}>
+                    <CosmoSideMenu />
+                </div>
+                <div className={classes.productsContainer}>
+                    <ProductsRow category='Produse recent adăugate în catalogul Cosmo Market' products={[]} />
+                    <ProductsRow category='Mâncare gătită' products={[]} />
+                </div>
+            </div>
+        </div>
     )
 }
