@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Container, IconButton, InputBase, Link, Paper, TextField, Typography } from '@material-ui/core'
+import { Badge, Button, IconButton, Link, Paper, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
@@ -12,7 +12,10 @@ const useStyles = makeStyles((theme) => ({
         display: 'inline-flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
+        margin: theme.spacing(1),
         padding: theme.spacing(2),
+        maxWidth: 200,
     },
     container: {
         display: 'inline-flex',
@@ -25,9 +28,11 @@ const useStyles = makeStyles((theme) => ({
         borderColor: theme.palette.info.main,
         borderStyle: 'solid',
         display: 'flex',
-        alignContent: 'center',
-        alignItems: 'center',
-        justifyContent: 'center'
+        alignContent: 'stretch',
+        alignItems: 'stretch',
+        justifyContent: 'stretch',
+        height: 30,
+
     },
     quantityTypography: {
         color: theme.palette.info.main,
@@ -52,9 +57,17 @@ const useStyles = makeStyles((theme) => ({
         marginRight: theme.spacing(1),
         width: 100,
         color: theme.palette.info.main,
+        display: 'flex',
+        alignContent: 'center',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     image: {
-        marginBottom: theme.spacing(3)
+        marginBottom: theme.spacing(3),
+        maxHeight: 100,
+        maxWidth: 100,
+        width: 'auto',
+        height: 'auto',
     },
     favorite: {
         color: theme.palette.error.main,
