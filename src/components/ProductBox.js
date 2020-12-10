@@ -1,4 +1,4 @@
-import { Badge, Button, IconButton, Link, Paper, Typography } from '@material-ui/core'
+import { Badge, Box, Button, IconButton, Link, Paper, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
@@ -119,9 +119,9 @@ export default function ProductBox({ product }) {
                     </IconButton>
                 } >
                     <Link href='#' className={classes.container}>
-                        <img className={classes.image} src="https://www.auchan.ro/public/images/hac/h0b/h00/bere-blonda-heineken-033l-8856591794206.jpg" alt='Bere blonda sticla 0.33 l Heineken' />
+                        <img className={classes.image} src={product.image} alt={product.name} />
                         <Typography color='primary' align='center' style={{ maxWidth: 200 }} >
-                            Bere blondă sticlă 0.33 l Heineken
+                            {product.name}
                         </Typography>
                     </Link>
                 </Badge>
@@ -154,6 +154,11 @@ export default function ProductBox({ product }) {
                         </IconButton>
                     </div>
                 </div>
+                <Typography variant='h6' color='error' style={{ marginBottom: 10 }}>
+                    <Box fontWeight='fontWeightBold'>
+                        {product.price} RON
+                    </Box>
+                </Typography>
                 <Button
                     color='primary'
                     variant='contained'

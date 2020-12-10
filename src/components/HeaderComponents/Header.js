@@ -10,8 +10,9 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import FavoriteIcon from '@material-ui/icons/Favorite';
-import { Button, useScrollTrigger } from '@material-ui/core';
-// import Slide from '@material-ui/core/Slide';
+import { Button, Link, useScrollTrigger } from '@material-ui/core';
+import CosmoMenu from '../HomeComponents/Menu';
+import AppBarMenu from './Menu';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -59,13 +60,8 @@ const useStyles = makeStyles((theme) => ({
         alignItems: 'center',
     },
     logo: {
-        height: 40,
+        height: 45,
         margin: theme.spacing()
-    },
-    logoButton: {
-        '&:hover': {
-            backgroundColor: 'inherit',
-        },
     },
     button: {
         padding: theme.spacing(1, 3),
@@ -82,7 +78,7 @@ const useStyles = makeStyles((theme) => ({
     },
     toolbar: {
         display: 'flex',
-        alignContent: 'space-around',
+        alignContent: 'center',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -111,9 +107,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-
-
-export default function Header() {
+export default function Header({ tab, handleTabChange }) {
     const classes = useStyles();
     // const trigger = useScrollTrigger()
 
@@ -136,13 +130,15 @@ export default function Header() {
     const appBar = (
         <AppBar position="sticky" >
             <Toolbar className={classes.toolbar}>
-                <Button
+                {/* <Button
                     className={classes.logoButton}
                     disableFocusRipple
                     disableRipple
-                >
+                > */}
+                <Link href='/acasa'>
                     <img src={logo} alt='logo' className={classes.logo} />
-                </Button>
+                </Link>
+                {/* </Button> */}
                 <div className={classes.searchInline}>
                     {renderSearch}
                 </div>
@@ -189,6 +185,9 @@ export default function Header() {
             <div className={classes.searchBottom}>
                 {renderSearch}
             </div>
+            <Toolbar variant='dense'>
+                <AppBarMenu tab={tab} handleTabChange={handleTabChange} />
+            </Toolbar>
         </AppBar>
     );
 

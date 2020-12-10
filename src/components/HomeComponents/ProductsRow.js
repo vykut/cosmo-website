@@ -2,7 +2,7 @@ import React from 'react'
 import ProductBox from '../ProductBox'
 import { makeStyles } from '@material-ui/core/styles'
 import { ChevronRight } from '@material-ui/icons'
-import { Link, Typography } from '@material-ui/core'
+import { Grid, Link, Typography } from '@material-ui/core'
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -39,25 +39,41 @@ export default function ProductsRow({ category, products }) {
     const classes = useStyles()
 
     return (
-        <div className={classes.container}>
-            <div className={classes.rowTitleContainer}>
-                <Typography variant='h5' style={{ marginBottom: 20 }} className={classes.title}>
-                    {category}
-                </Typography>
-                <Link href='#' underline='none' className={classes.link}>
-
-                    <Typography className={classes.title}>
-                        Descoperă produsele
+        <Grid
+            container
+            direction='column'
+            justify='center'
+        >
+            <Grid
+                container
+                justify='space-between'
+                direction='row'
+            >
+                <Grid item >
+                    <Typography variant='h5' style={{ marginBottom: 20 }} className={classes.title}>
+                        {category}
                     </Typography>
-                    <ChevronRight fontSize='large' className={classes.image} />
-                </Link>
-            </div>
-            <div className={classes.rowContainer}>
-                <ProductBox product={products[0]} />
-                <ProductBox product={products[1]} />
-                <ProductBox product={products[2]} />
-                <ProductBox product={products[3]} />
-            </div>
-        </div>
+                </Grid>
+                {/* <div style={{ flexGrow: '5' }}></div> */}
+                <Grid item>
+                    <Link href='#' underline='none' className={classes.link}>
+                        <Typography className={classes.title}>
+                            Descoperă produsele
+                        </Typography>
+                        <ChevronRight fontSize='large' className={classes.image} />
+                    </Link>
+                </Grid>
+            </Grid>
+            <Grid container item
+                direction="row"
+                justify="space-around"
+            >
+                {products.map((product, index) => {
+                    return <Grid item key={index}>
+                        <ProductBox product={product} key={index} />
+                    </Grid>
+                })}
+            </Grid>
+        </Grid>
     )
 }
