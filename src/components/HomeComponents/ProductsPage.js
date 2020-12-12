@@ -1,58 +1,20 @@
 import React, { useState } from 'react'
-import { Button, FormControl, Grid, InputAdornment, InputBase, InputLabel, makeStyles, OutlinedInput, Paper, Select, TextField, withStyles } from '@material-ui/core';
+import { Chip, Grid, makeStyles, Paper } from '@material-ui/core';
 import ProductBox from '../ProductBox';
-import { MemoryRouter, Route, useHistory } from 'react-router';
-import { Link } from 'react-router-dom';
 import Pagination from '@material-ui/lab/Pagination';
-import PaginationItem from '@material-ui/lab/PaginationItem';
-import FilterSelect from '../AuxiliaryComponents/FilterSelect';
-import { Menu, MenuItem } from '@material-ui/core'
 import CosmoMenu from './Menu';
-import SearchIcon from '@material-ui/icons/Search';
+import FilterMenu from './FilterMenu';
+import EuroIcon from '@material-ui/icons/Euro';
+import ProductsPageHeader from './ProductsPageHeader';
 
 export const useStyles = makeStyles((theme) => ({
-    iconButton: {
-        marginRight: theme.spacing(1),
-        padding: theme.spacing(1, 0),
-        minWidth: 50,
-        marginLeft: -15,
-        color: theme.palette.info.main,
-    },
-    input: {
-        color: theme.palette.info.main,
-    },
-    formControl: {
-    },
-    outlinedInput: {
-        borderColor: `${theme.palette.info.main} !important`,
-        color: 'red',
+    productsGrid: {
+        justifyContent: "flex-start",
+        [theme.breakpoints.down('sm')]: {
+            justifyContent: 'center'
+        },
     },
 }))
-
-const StyledOutlineInput = withStyles((theme) => ({
-    root: {
-    },
-    notchedOutline: {
-        borderColor: `${theme.palette.info.main} !important`,
-    }
-}))(OutlinedInput);
-
-const StyledSelect = withStyles((theme) => ({
-    // root: {
-    // borderColor: `${theme.palette.info.main} !important`,
-    // },
-    // nativeInput: {
-    outlined: {
-        borderColor: `${theme.palette.info.main} !important`,
-    }
-    // }
-}))(Select);
-
-const StyledSearchIcon = withStyles((theme) => ({
-    root: {
-        color: theme.palette.info.main
-    }
-}))(SearchIcon);
 
 export default function ProductsPage(props) {
 
@@ -61,21 +23,30 @@ export default function ProductsPage(props) {
     const product = {
         image: "https://www.auchan.ro/public/images/hac/h0b/h00/bere-blonda-heineken-033l-8856591794206.jpg",
         name: 'Bere blonda sticla 0.33 l Heineken',
-        price: 5
-
+        price: 5,
+        id: 'bere-heineken',
+        category: 'bauturi',
     }
 
     const [products, setProducts] = useState([product, product, product, product, product, product,
         product, product, product, product, product, product, product, product, product, product,
         product, product, product, product])
-    const [cols, setCols] = useState(3)
+
+
+
     const [pages, setPages] = useState(3)
-    const [state, setState] = useState({ filter: 0, numberOfProducts: 24 })
+    const [state, setState] = useState({ sort: 0, numberOfProducts: 24 })
     const [currentPage, setCurrentPage] = useState(1)
+    const [filter, setFilter] = useState({})
+
 
     const { match, history } = props;
     const { params } = match;
     const { categorie } = params;
+
+    const defaultValue = { price: [10, 323] }
+
+    // set default value on fetch
     //fetch products
 
     const handleChange = (e, value) => {
@@ -83,6 +54,21 @@ export default function ProductsPage(props) {
             ...state,
             [`${e.target.name}`]: e.target.value
         })
+    }
+
+    const commitFilter = name => (e, value) => {
+        // filter products
+        if (JSON.stringify(value) === JSON.stringify(defaultValue[name])) {
+            setFilter({
+                ...filter,
+                [name]: null
+            })
+        } else {
+            setFilter({
+                ...filter,
+                [name]: value
+            })
+        }
     }
 
 
@@ -104,79 +90,45 @@ export default function ProductsPage(props) {
         )
     }
 
-    function ProductsPageHeader() {
+    function FilterChip() {
         return (
-            <Paper style={{ padding: 8, margin: 8 }}>
-                <Grid container direction='row' justify='space-between' alignContent='center' alignItems='center'>
-                    <Grid item xs>
-                        <StyledOutlineInput
-                            className={classes.input}
-                            classes={{ root: classes.inputRoot }}
-                            placeholder='Caută un produs'
-                            variant='outlined'
-                            margin='dense'
-                            fullWidth
-                            startAdornment={
-                                <Button className={classes.iconButton} >
-                                    <StyledSearchIcon />
-                                </Button>
-                            } />
-                    </Grid>
-                    <Grid container xs item justify='flex-end' spacing={2}>
-                        <Grid item>
-                            <StyledSelect
-                                labelId="filter-label"
-                                value={state.filter}
-                                name='filter'
-                                onChange={handleChange}
-                                variant='outlined'
-                                autoWidth
-                                margin='dense'
-                                classes={{ outlined: classes.outlinedInput }}
-                            >
-                                <MenuItem value={0}>După poziție</MenuItem>
-                                <MenuItem value={1}>Preț crescător</MenuItem>
-                                <MenuItem value={2}>Preț descrescător</MenuItem>
-                                <MenuItem value={3}>Alfabetic A-Z</MenuItem>
-                                <MenuItem value={4}>Alfabetic Z-A</MenuItem>
-                            </StyledSelect>
-                        </Grid>
-                        <Grid item>
-                            <StyledSelect
-                                labelId="number-of-products-label"
-                                value={state.numberOfProducts}
-                                name='numberOfProducts'
-                                onChange={handleChange}
-                                variant='outlined'
-                                margin='dense'
-                            >
-                                <MenuItem value={24}>24</MenuItem>
-                                <MenuItem value={48}>48</MenuItem>
-                                <MenuItem value={96}>96</MenuItem>
-                            </StyledSelect>
-                        </Grid>
-                    </Grid>
-                </Grid>
+            <Paper>
+                {filter.price && <Chip
+                    icon={<EuroIcon />}
+                    label={`${filter.price[0]} < RON < ${filter.price[1]}`}
+                    onDelete={() => setFilter({
+                        ...filter,
+                        price: null
+                    })}
+                />}
             </Paper>
-        );
+        )
     }
 
     return (
-        <div style={{ padding: 2 }}>
-            <Grid container direction='row' justify='center'>
-                <Grid item>
-                    <CosmoMenu {...props} />
+        <div style={{ padding: 8 }}>
+            <Grid container direction='row' justify='center' >
+                <Grid item >
+                    <Grid item>
+                        {/* <FilterChip /> */}
+                    </Grid>
+                    <Grid item>
+                        <CosmoMenu {...props} />
+                    </Grid>
+                    <Grid item>
+                        <FilterMenu defaultValue={defaultValue.price} commitFilter={commitFilter} />
+                    </Grid>
                 </Grid>
-                <Grid item container direction='column' justify='center' alignContent='center' alignItems='center' xs>
-                    <Grid item style={{ width: '100%' }}>
-                        <ProductsPageHeader />
+                <Grid item container direction='column' justify='center' alignContent='center' alignItems='center' sm>
+                    <Grid item style={{ width: '100%' }} >
+                        <ProductsPageHeader sort={state.sort} numberOfProducts={state.numberOfProducts} handleChange={handleChange} />
                     </Grid>
                     <Grid
                         container
                         item
                         direction="row"
-                        justify="center"
                         alignItems="center"
+                        className={classes.productsGrid}
                     >
                         {products.map((product, index) => {
                             return <Grid item key={index}>
@@ -189,6 +141,6 @@ export default function ProductsPage(props) {
                     </Grid>
                 </Grid>
             </Grid>
-        </div>
+        </div >
     )
 }

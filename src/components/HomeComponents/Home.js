@@ -29,8 +29,9 @@ export default function Home() {
     const product = {
         image: "https://www.auchan.ro/public/images/hac/h0b/h00/bere-blonda-heineken-033l-8856591794206.jpg",
         name: 'Bere blonda sticla 0.33 l Heineken',
-        price: 5
-
+        price: 5,
+        id: 'bere-heineken',
+        categorie: 'bauturi',
     }
 
     return (
@@ -41,6 +42,7 @@ export default function Home() {
                 direction='column'
                 justify="center"
                 md
+                spacing={4}
             >
                 <Grid item>
                     <ProductsRow category='Produse recent adăugate în catalogul Cosmo Market' products={[product, product, product, product]} />

@@ -1,5 +1,5 @@
 import logo from '../../assets/logo-app-bar-cosmo-market.svg';
-import React from 'react';
+import React, { useState } from 'react';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -10,9 +10,13 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import FavoriteIcon from '@material-ui/icons/Favorite';
-import { Button, Link, useScrollTrigger } from '@material-ui/core';
-import CosmoMenu from '../HomeComponents/Menu';
+import { Button, Dialog, DialogContent, DialogTitle, Drawer, Grid, IconButton, Link, useScrollTrigger } from '@material-ui/core';
 import AppBarMenu from './Menu';
+import CartDrawer from './CartDrawer';
+import LoginLogic from '../LoginComponents/LoginLogic';
+import { useAuth } from '../../contexts/AuthContext';
+import CloseIcon from '@material-ui/icons/Close';
+import { useHistory } from 'react-router-dom';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -104,12 +108,36 @@ const useStyles = makeStyles((theme) => ({
         [theme.breakpoints.down(400)]: {
             display: 'none',
         },
-    }
+    },
+    closeButton: {
+        color: theme.palette.error.main,
+    },
 }));
 
 export default function Header({ tab, handleTabChange }) {
     const classes = useStyles();
+    const history = useHistory()
     // const trigger = useScrollTrigger()
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+    const { currentUser, login } = useAuth()
+
+    const toggleDrawer = (isOpen) => (e) => {
+        if (e.type === 'keydown' && (e.key === 'Tab' || e.key === 'Shift')) {
+            return
+        }
+        setIsDrawerOpen(isOpen)
+    }
+
+
+
+    const handleAccount = () => {
+        if (!currentUser) {
+            console.log('lol')
+            login()
+        } else {
+            history.push('/contul-meu')
+        }
+    }
 
     const renderSearch = (
         <div className={classes.search}>
@@ -128,67 +156,75 @@ export default function Header({ tab, handleTabChange }) {
     )
 
     const appBar = (
-        <AppBar position="sticky" >
-            <Toolbar className={classes.toolbar}>
-                {/* <Button
+        <>
+            <AppBar position="sticky" >
+                <Toolbar className={classes.toolbar}>
+                    {/* <Button
                     className={classes.logoButton}
                     disableFocusRipple
                     disableRipple
                 > */}
-                <Link href='/acasa'>
-                    <img src={logo} alt='logo' className={classes.logo} />
-                </Link>
-                {/* </Button> */}
-                <div className={classes.searchInline}>
+                    <Link href='/acasa'>
+                        <img src={logo} alt='logo' className={classes.logo} />
+                    </Link>
+                    {/* </Button> */}
+                    <div className={classes.searchInline}>
+                        {renderSearch}
+                    </div>
+                    <div className={classes.buttonGroup}>
+                        <Button
+                            disableElevation
+                            color='inherit'
+                            size='large'
+                            className={classes.button}
+                            onClick={handleAccount}
+                        >
+                            <Typography variant='body1' className={classes.label}>
+                                {currentUser ? 'Salut, Victor' : 'Conectează-te'}
+                            </Typography>
+                            <AccountCircle />
+                        </Button>
+                        <Button
+                            disableElevation
+                            color='inherit'
+                            size='large'
+                            className={classes.button}
+                        >
+                            <Typography variant='body1' className={classes.label}>
+                                Favorite
+                            </Typography>
+                            <Badge badgeContent={4} color="secondary">
+                                <FavoriteIcon />
+                            </Badge>
+                        </Button>
+                        <Button
+                            disableElevation
+                            color='inherit'
+                            size='large'
+                            className={classes.button}
+                            onClick={toggleDrawer(true)}
+                            onMouseEnter={toggleDrawer(true)}
+                        >
+                            <Typography variant='body1' className={classes.label}>
+                                Coș
+                            </Typography>
+                            <Badge badgeContent={4} color="secondary">
+                                <ShoppingCartIcon />
+                            </Badge>
+                        </Button>
+                    </div>
+                </Toolbar>
+                <div className={classes.searchBottom}>
                     {renderSearch}
                 </div>
-                <div className={classes.buttonGroup}>
-                    <Button
-                        disableElevation
-                        color='inherit'
-                        size='large'
-                        className={classes.button}
-                    >
-                        <Typography variant='body1' className={classes.label}>
-                            Salut, Victor
-                            </Typography>
-                        <AccountCircle />
-                    </Button>
-                    <Button
-                        disableElevation
-                        color='inherit'
-                        size='large'
-                        className={classes.button}
-                    >
-                        <Typography variant='body1' className={classes.label}>
-                            Favorite
-                            </Typography>
-                        <Badge badgeContent={4} color="secondary">
-                            <FavoriteIcon />
-                        </Badge>
-                    </Button>
-                    <Button
-                        disableElevation
-                        color='inherit'
-                        size='large'
-                        className={classes.button}
-                    >
-                        <Typography variant='body1' className={classes.label}>
-                            Coș
-                            </Typography>
-                        <Badge badgeContent={4} color="secondary">
-                            <ShoppingCartIcon />
-                        </Badge>
-                    </Button>
-                </div>
-            </Toolbar>
-            <div className={classes.searchBottom}>
-                {renderSearch}
-            </div>
-            <Toolbar variant='dense'>
-                <AppBarMenu tab={tab} handleTabChange={handleTabChange} />
-            </Toolbar>
-        </AppBar>
+                <Toolbar variant='dense'>
+                    <AppBarMenu tab={tab} handleTabChange={handleTabChange} />
+                </Toolbar>
+            </AppBar>
+
+
+
+        </>
     );
 
     // const showHeader = (
@@ -209,6 +245,8 @@ export default function Header({ tab, handleTabChange }) {
             {/* <HideOnScroll {...props} className={classes.hideOnScroll}> */}
             {/* {showHeader} */}
             {appBar}
+            <CartDrawer open={isDrawerOpen} onClose={toggleDrawer(false)} />
+
             {/* </HideOnScroll> */}
         </>
     );

@@ -24,7 +24,7 @@ export const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function SignUp({ setAlert, setLoginComponent }) {
+export default function SignUp({ setAlert, setLoginComponent, toggleDialog }) {
     const classes = useStyles();
     const { signUp } = useAuth()
     const [form, setForm] = useState({})
@@ -51,6 +51,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
         try {
             setLoading(true)
             await signUp(form)
+            toggleDialog(false)
             setAlert({ severity: 'success', message: 'Contul a fost creat cu succes.' })
         } catch (error) {
             setAlert({ severity: 'error', message: error.message })
@@ -63,7 +64,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
         <Container component="main" maxWidth="md" className={classes.form}>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
-                    <Grid item sm container spacing={2} direction='column'>
+                    <Grid container item xs={6} spacing={2} direction='column'>
                         <Grid item>
                             <TextField
                                 autoComplete="fname"
@@ -97,15 +98,15 @@ export default function SignUp({ setAlert, setLoginComponent }) {
                                 id="phone"
                                 label="Telefon"
                                 name="phone"
-                                autoComplete="phone"
+                                autoComplete="tel"
                                 onChange={onChangeForField('phone')}
                             />
                         </Grid>
                     </Grid>
-                    <Grid item >
+                    <Grid item>
                         <Divider className={classes.divider} orientation='vertical' />
                     </Grid>
-                    <Grid item sm container direction='column' spacing={2}>
+                    <Grid container item xs={6} direction='column' spacing={2}>
                         <Grid item>
                             <TextField
                                 variant="outlined"

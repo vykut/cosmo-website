@@ -1,5 +1,5 @@
 import { Badge, Box, Button, IconButton, Link, Paper, Typography } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { memo, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import { fade, makeStyles } from '@material-ui/core/styles';
@@ -118,7 +118,7 @@ export default function ProductBox({ product }) {
                         {isFavorite ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
                     </IconButton>
                 } >
-                    <Link href='#' className={classes.container}>
+                    <Link className={classes.container} href={`/categorii/${product.category}/${product.id}`}>
                         <img className={classes.image} src={product.image} alt={product.name} />
                         <Typography color='primary' align='center' style={{ maxWidth: 200 }} >
                             {product.name}
@@ -148,7 +148,6 @@ export default function ProductBox({ product }) {
                             className={classes.quantityIncrement}
                             onClick={() => { adjustQuantity(true) }}
                             id='increment'
-
                         >
                             <AddIcon />
                         </IconButton>
@@ -171,3 +170,5 @@ export default function ProductBox({ product }) {
         </>
     )
 }
+
+export const MemoizedProductBox = memo(ProductBox)

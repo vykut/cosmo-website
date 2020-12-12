@@ -1,13 +1,6 @@
-import React from 'react'
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import { useState } from 'react';
-import Grid from '@material-ui/core/Grid';
-// import { useStyles } from '../../utils/styles'
-import Link from '@material-ui/core/Link';
-import Container from '@material-ui/core/Container';
-import { useAuth } from '../../contexts/AuthContext'
-import { makeStyles } from '@material-ui/core/styles';
+import { Button, Container, Grid, Link, makeStyles, TextField, useTheme } from '@material-ui/core';
+import React, { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext';
 
 export const useStyles = makeStyles((theme) => ({
     form: {
@@ -20,7 +13,7 @@ export const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function SignIn({ setAlert, setLoginComponent }) {
+export default function SignIn({ setAlert, setLoginComponent, toggleDialog }) {
     const classes = useStyles();
     const { signIn } = useAuth()
 
@@ -36,6 +29,7 @@ export default function SignIn({ setAlert, setLoginComponent }) {
             setLoading(true)
             await signIn(form)
             setAlert({ severity: 'success', message: 'Te-ai conectat cu succes.' })
+            toggleDialog(false)
         } catch (error) {
             setAlert({ severity: 'error', message: error.message })
         }

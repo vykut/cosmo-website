@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import ProductBox from '../ProductBox'
 import { makeStyles } from '@material-ui/core/styles'
 import { ChevronRight } from '@material-ui/icons'
@@ -7,7 +7,7 @@ import { Grid, Link, Typography } from '@material-ui/core'
 const useStyles = makeStyles((theme) => ({
     container: {
         marginTop: theme.spacing(2),
-        padding: theme.spacing(1),
+        // padding: theme.spacing(1),
     },
     rowTitleContainer: {
         display: 'flex',
@@ -42,7 +42,7 @@ export default function ProductsRow({ category, products }) {
         <Grid
             container
             direction='column'
-            justify='center'
+            justify='space-between'
         >
             <Grid
                 container
@@ -77,3 +77,5 @@ export default function ProductsRow({ category, products }) {
         </Grid>
     )
 }
+
+export const MemoizedProductsRow = memo(ProductsRow)

@@ -8,7 +8,7 @@ import FilterListIcon from '@material-ui/icons/FilterList';
 import EuroIcon from '@material-ui/icons/Euro';
 import SmokingRoomsIcon from '@material-ui/icons/SmokingRooms';
 import StoreIcon from '@material-ui/icons/Store';
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, withStyles } from '@material-ui/core/styles'
 import { useState } from 'react'
 import { capitalize } from '../../utils/utils';
 
@@ -30,7 +30,7 @@ export const useStyles = makeStyles((theme) => ({
         width: 'inherit',
     },
     paper: {
-        marginLeft: theme.spacing(2),
+        marginLeft: theme.spacing(1),
         marginRight: theme.spacing(2),
         margin: theme.spacing(1),
         width: 250
@@ -40,6 +40,12 @@ export const useStyles = makeStyles((theme) => ({
         justifyContent: 'space-between',
     },
 }))
+
+const StyledListItem = withStyles((theme) => ({
+    root: {
+        color: theme.palette.error.main
+    }
+}))(ListItem);
 
 function paramToCategory(param) {
     switch (param) {
@@ -76,14 +82,14 @@ export default function CosmoMenu(props) {
 
     function BackButton() {
         return (
-            <ListItem button>
+            <StyledListItem button>
                 <ListItemIcon>
                     <ChevronLeft />
                 </ListItemIcon>
                 <Typography variant='body1' color='error'>
                     Înapoi
                 </Typography>
-            </ListItem>
+            </StyledListItem>
         );
     }
 
@@ -121,11 +127,7 @@ export default function CosmoMenu(props) {
         )
     }
 
-
-
     return (
-        <div>
-            <CosmoDesktopSideMenu />
-        </div>
+        <CosmoDesktopSideMenu />
     )
 }

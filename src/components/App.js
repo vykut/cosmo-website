@@ -10,6 +10,8 @@ import { useState } from 'react';
 import ProductsPage from './HomeComponents/ProductsPage';
 import { Breadcrumbs, Link, Typography } from '@material-ui/core';
 import StoreIcon from '@material-ui/icons/Store';
+import ProductPage from './ProductComponents/ProductPage';
+import AccountOverview from './AccountComponents/AccountOverview';
 
 export var cosmoTheme = createMuiTheme({
   palette: {
@@ -31,7 +33,7 @@ export var cosmoTheme = createMuiTheme({
     succes: {
       main: '#55df99'
     }
-  }
+  },
 })
 
 cosmoTheme = responsiveFontSizes(cosmoTheme)
@@ -60,22 +62,29 @@ function App() {
 
   return (
     <ThemeProvider theme={cosmoTheme}>
-      {/* <LoginLogic></LoginLogic> */}
-      <Header />
-
-      <Switch>
-
-        <Route exact path='/acasa'>
-          <CosmoBreadcrumbs />
-          <Home />
+      <AuthProvider>
+        <Route path='/:tip?/:categorie?/:produs?'>
+          <Header />
         </Route>
-        <Route exact path='/categorii/:categorie' render={props => <>
-          <CosmoBreadcrumbs />
-          <ProductsPage {...props} />
-        </>
-        } />
-        <Redirect to='/acasa' />
-      </Switch>
+        <Switch>
+          <Route exact path='/acasa'>
+            <CosmoBreadcrumbs />
+            <Home />
+          </Route>
+          <Route path='/contul-meu'>
+            <AccountOverview />
+          </Route>
+          <Route exact path='/categorii/:categorie' render={props => <>
+            <CosmoBreadcrumbs />
+            <ProductsPage {...props} />
+          </>} />
+          <Route exact path='/categorii/:categorie/:produs' render={props => <>
+            <CosmoBreadcrumbs />
+            <ProductPage {...props} />
+          </>} />
+          <Redirect to='/acasa' />
+        </Switch>
+      </AuthProvider>
     </ThemeProvider>
   )
 }
