@@ -1,8 +1,9 @@
-import { Box, Button, Drawer, Grid, IconButton, Link, makeStyles, Paper, Typography, withStyles } from '@material-ui/core'
+import { Box, Button, Drawer, Grid, IconButton, makeStyles, Link, Paper, Typography, withStyles } from '@material-ui/core'
 import React, { useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import { Link as RouterLink } from 'react-router-dom/'
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -107,7 +108,7 @@ export default function ListProduct({ product }) {
         <Paper className={classes.paper}>
             <Grid container direction='column' spacing={2}>
                 <Grid item>
-                    <Link href={`/categorii/${product.category}/${product.id}`} underline='none'>
+                    <Link component={RouterLink} to={`/categorii/${product.category}/p/${product.id}`} underline='none'>
                         <Grid container>
                             <Grid item xs={3} >
                                 <img src={product.image} alt={product.name} className={classes.image} />

@@ -6,6 +6,7 @@ import CosmoMenu from './Menu';
 import FilterMenu from './FilterMenu';
 import EuroIcon from '@material-ui/icons/Euro';
 import ProductsPageHeader from './ProductsPageHeader';
+import { useParams, useRouteMatch } from 'react-router-dom';
 
 export const useStyles = makeStyles((theme) => ({
     productsGrid: {
@@ -17,6 +18,9 @@ export const useStyles = makeStyles((theme) => ({
 }))
 
 export default function ProductsPage() {
+
+    const { category, subcategory1, subcategory2 } = useParams();
+    const { url, path } = useRouteMatch();
 
     const classes = useStyles()
 

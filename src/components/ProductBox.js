@@ -1,4 +1,4 @@
-import { Badge, Box, Button, IconButton, Link, Paper, Typography } from '@material-ui/core'
+import { Badge, Box, Button, IconButton, Paper, Typography } from '@material-ui/core'
 import React, { memo, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
@@ -6,6 +6,8 @@ import { fade, makeStyles } from '@material-ui/core/styles';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import { useRouteMatch } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -21,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'inline-flex',
         flexDirection: 'column',
         alignItems: 'center',
+        color: theme.palette.primary.main,
     },
     quantitySelector: {
         borderRadius: 5,
@@ -82,6 +85,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ProductBox({ product }) {
     const classes = useStyles()
+
+    const { url, path } = useRouteMatch();
+
     const [isFavorite, setIsFavorite] = useState(false)
     const [quantity, setQuantity] = useState(1)
 
@@ -93,6 +99,8 @@ export default function ProductBox({ product }) {
         setIsFavorite(!isFavorite)
 
     }
+
+    //fetch product by id
 
     const adjustQuantity = (increment) => {
         if (increment && quantity < 20) {
@@ -118,7 +126,7 @@ export default function ProductBox({ product }) {
                         {isFavorite ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
                     </IconButton>
                 } >
-                    <Link className={classes.container} href={`/categorii/${product.category}/${product.id}`}>
+                    <Link className={classes.container} to={`${url}/p/${product.id}`}>
                         <img className={classes.image} src={product.image} alt={product.name} />
                         <Typography color='primary' align='center' style={{ maxWidth: 200 }} >
                             {product.name}

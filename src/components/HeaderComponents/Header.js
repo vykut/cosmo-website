@@ -221,33 +221,13 @@ export default function Header({ tab, handleTabChange }) {
                     <AppBarMenu tab={tab} handleTabChange={handleTabChange} />
                 </Toolbar>
             </AppBar>
-
-
-
         </>
     );
 
-    // const showHeader = (
-    //     <>
-    //         {/* <div className={classes.hideAppBar}>
-    //             <Slide appear={false} direction="down" in={!trigger} >
-    //                 {appBar}
-    //             </Slide>
-    //         </div>
-    //         <div className={classes.showAppBar}>
-    //             {appBar}
-    //         </div> */}
-    //     </>
-    // );
-
     return (
         <>
-            {/* <HideOnScroll {...props} className={classes.hideOnScroll}> */}
-            {/* {showHeader} */}
             {appBar}
             <CartDrawer open={isDrawerOpen} onClose={toggleDrawer(false)} />
-
-            {/* </HideOnScroll> */}
         </>
     );
 }

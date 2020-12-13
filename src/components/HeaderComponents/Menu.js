@@ -7,7 +7,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import { useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import HomeIcon from '@material-ui/icons/Home';
 import { Button, Grid, List, ListItem, Menu, MenuItem } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
@@ -74,21 +74,36 @@ function pathToIndex(path) {
 export default function AppBarMenu() {
     const classes = useStyles();
 
-    const [tab, setTab] = useState(0)
+    const { url, path } = useRouteMatch()
+    const { category } = useParams()
     const history = useHistory()
-    const { tip, categorie } = useParams()
+
+    const [tab, setTab] = useState(-1)
 
     useEffect(() => {
-        if (tip === 'acasa') {
+        if (url === '/acasa') {
             setTab(0)
+        } else if (category) {
+            setTab(pathToIndex(category))
         } else {
-            setTab(pathToIndex(categorie))
+            setTab(-1)
         }
-    }, [categorie, tip])
+    }, [url, category])
+
+    history.listen((location) => {
+        console.log(location)
+        if (location === '/acasa') {
+            setTab(0)
+        } else if (category) {
+            setTab(pathToIndex(category))
+        } else {
+            setTab(-1)
+        }
+    })
 
     const handleTabChange = (e, index) => {
         console.log(e, index)
-        setTab(index)
+        // setTab(index)
         history.push(indexToPath(index))
     }
 

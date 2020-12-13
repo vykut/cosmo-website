@@ -31,7 +31,7 @@ export default function Home() {
         name: 'Bere blonda sticla 0.33 l Heineken',
         price: 5,
         id: 'bere-heineken',
-        categorie: 'bauturi',
+        category: 'bauturi',
     }
 
     return (

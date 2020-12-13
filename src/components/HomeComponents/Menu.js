@@ -11,6 +11,8 @@ import StoreIcon from '@material-ui/icons/Store';
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import { useState } from 'react'
 import { capitalize } from '../../utils/utils';
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 export const useStyles = makeStyles((theme) => ({
     nested: {
@@ -47,6 +49,12 @@ const StyledListItem = withStyles((theme) => ({
     }
 }))(ListItem);
 
+const InfoListItem = withStyles((theme) => ({
+    root: {
+        color: theme.palette.info.main
+    }
+}))(ListItem)
+
 function paramToCategory(param) {
     switch (param) {
         case 'alimente': return "Alimente"
@@ -59,6 +67,13 @@ function paramToCategory(param) {
 
 export default function CosmoMenu() {
     const classes = useStyles();
+
+    const { url, path } = useRouteMatch();
+    const { category, subcategory1, subcategory2 } = useParams()
+    console.log(url, path)
+    console.log(category, subcategory1, subcategory2)
+
+    const history = useHistory();
 
     const [collapseFilter, setCollapseFilter] = useState(true)
     const [backButton, setBackButton] = useState(true)
@@ -76,9 +91,11 @@ export default function CosmoMenu() {
 
     ]
 
+    //fetch categories
+
     function BackButton() {
         return (
-            <StyledListItem button>
+            <StyledListItem button component={Link} to={url.substr(0, url.lastIndexOf('/'))}>
                 <ListItemIcon>
                     <ChevronLeft />
                 </ListItemIcon>
@@ -92,7 +109,6 @@ export default function CosmoMenu() {
     function CosmoDesktopSideMenu() {
         return (
             <Paper className={classes.paper}>
-
                 <List
                     component='nav'
                     aria-labelledby="nested-list-subheader"
@@ -106,15 +122,15 @@ export default function CosmoMenu() {
                         </Typography>
                         {collapseFilter ? <ExpandLess /> : <ExpandMore />}
                     </ListItem>
-                    {backButton && <BackButton />}
+                    {subcategory1 && <BackButton />}
                     <Collapse in={collapseFilter} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {items.map((item, index) => {
-                                return <ListItem button key={index}>
-                                    <Typography variant='body1' className={classes.listItem} key={index}>
+                                return <InfoListItem button key={index} component={Link} to={`${url}/${item}`}>
+                                    <Typography variant='body1' className={classes.listItem}>
                                         {item}
                                     </Typography>
-                                </ListItem>
+                                </InfoListItem>
                             })}
                         </List>
                     </Collapse>
