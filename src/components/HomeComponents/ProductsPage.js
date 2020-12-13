@@ -16,7 +16,7 @@ export const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function ProductsPage(props) {
+export default function ProductsPage() {
 
     const classes = useStyles()
 
@@ -38,11 +38,6 @@ export default function ProductsPage(props) {
     const [state, setState] = useState({ sort: 0, numberOfProducts: 24 })
     const [currentPage, setCurrentPage] = useState(1)
     const [filter, setFilter] = useState({})
-
-
-    const { match, history } = props;
-    const { params } = match;
-    const { categorie } = params;
 
     const defaultValue = { price: [10, 323] }
 
@@ -113,7 +108,7 @@ export default function ProductsPage(props) {
                         {/* <FilterChip /> */}
                     </Grid>
                     <Grid item>
-                        <CosmoMenu {...props} />
+                        <CosmoMenu />
                     </Grid>
                     <Grid item>
                         <FilterMenu defaultValue={defaultValue.price} commitFilter={commitFilter} />

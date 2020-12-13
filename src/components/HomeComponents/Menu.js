@@ -57,15 +57,11 @@ function paramToCategory(param) {
 }
 
 
-export default function CosmoMenu(props) {
+export default function CosmoMenu() {
     const classes = useStyles();
 
     const [collapseFilter, setCollapseFilter] = useState(true)
     const [backButton, setBackButton] = useState(true)
-
-    const { match, history } = props;
-    const { params } = match;
-    const { categorie } = params;
 
     const items = [
         'Davidoff',
@@ -105,7 +101,7 @@ export default function CosmoMenu(props) {
                     <ListItem button onClick={() => setCollapseFilter(!collapseFilter)} className={classes.menuTitle}>
                         <Typography variant='h6' >
                             <Box fontWeight='fontWeightBold'>
-                                {paramToCategory(categorie)}
+                                {paramToCategory('tigari')}
                             </Box>
                         </Typography>
                         {collapseFilter ? <ExpandLess /> : <ExpandMore />}

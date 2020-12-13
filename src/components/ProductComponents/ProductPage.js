@@ -84,15 +84,8 @@ const product = {
     category: 'bauturi'
 }
 
-export default function ProductPage(props) {
+export default function ProductPage() {
     const classes = useStyles()
-
-
-
-    const { match, history } = props;
-    const { params } = match;
-    //product ID
-    const { produs } = params;
 
     const [state, setState] = useState({ quantity: 1 })
     const [isFavorite, setIsFavorite] = useState(false)
@@ -136,7 +129,7 @@ export default function ProductPage(props) {
     }
 
     return (
-        <Container maxWidth='lg' style={{ marginBottom: 24 }}>
+        <Container maxWidth='lg' style={{ marginBottom: 24, marginTop: 24 }}>
             <Paper className={classes.paper}>
                 <Grid container direction="column" justify='center' spacing={4}>
                     <Grid container item spacing={2}>

@@ -7,17 +7,28 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function AddressForm({ address, setAddress }) {
+export default function AddressForm({ address, setAddress, addressKey, setAddressKey }) {
     const classes = useStyles()
 
-    const [addressKey, setAddressKey] = useState('')
+    const [componentAddressKey, setComponentAddressKey] = useState('')
+    const [componentAddress, setComponentAddress] = useState({})
+
+    if (address === undefined || setAddress === undefined) {
+        address = componentAddress
+        setAddress = setComponentAddress
+    }
+
+    if (addressKey === undefined || setAddressKey === undefined) {
+        addressKey = componentAddressKey
+        setAddressKey = setComponentAddressKey
+    }
 
     const handleSelectChange = (e) => {
         setAddressKey(e.target.value)
         switch (e.target.value) {
             case '':
             case -1:
-                setAddress({
+                return setAddress({
                     apartment: '',
                     block: '',
                     floor: '',
@@ -26,7 +37,6 @@ export default function AddressForm({ address, setAddress }) {
                     number: '',
                     street: '',
                 })
-                break
             default:
                 return setAddress(addresses[e.target.value])
         }
@@ -62,29 +72,29 @@ export default function AddressForm({ address, setAddress }) {
     ]
 
     return (
-        <Paper className={classes.paper} >
-            <Grid container direction='column' spacing={2} >
-                <Grid item >
-                    {/* <FormControl required fullWidth> */}
-                    <Select
-                        value={addressKey}
-                        onChange={handleSelectChange}
-                        displayEmpty
-                        variant='outlined'
-                        fullWidth
-                        required
-                        defaultValue='Selectează adresa de livrare'
-                    >
-                        <MenuItem value={''} disabled>Selectează adresa de livrare</MenuItem>
-                        {addresses.map((address, index) => <MenuItem value={index} key={index}>
-                            {address.label}
-                        </MenuItem>)}
-                        <MenuItem value={-1}>Adresă nouă</MenuItem>
-                    </Select>
-                    {/* </FormControl> */}
-                </Grid>
-                {addressKey !== '' && <>
-                    <Grid item>
+        <Grid container direction='column' >
+            <Grid item>
+                {/* <FormControl required fullWidth> */}
+                <Select
+                    value={addressKey}
+                    onChange={handleSelectChange}
+                    displayEmpty
+                    variant='outlined'
+                    fullWidth
+                    required
+                    defaultValue='Selectează adresa de livrare'
+                >
+                    <MenuItem value={''} disabled>Selectează adresa de livrare</MenuItem>
+                    {addresses.map((address, index) => <MenuItem value={index} key={index}>
+                        {address.label}
+                    </MenuItem>)}
+                    <MenuItem value={-1}>Adresă nouă</MenuItem>
+                </Select>
+                {/* </FormControl> */}
+            </Grid>
+            {addressKey !== '' &&
+                <>
+                    <Grid item style={{ paddingTop: 8 }}>
                         <TextField
                             required
                             value={address.street || ''}
@@ -96,29 +106,27 @@ export default function AddressForm({ address, setAddress }) {
                             autoComplete='street-address'
                         />
                     </Grid>
-                    <Grid container item spacing={2}>
-                        <Grid item xs={6}>
-                            <TextField required value={address.number || ''} onChange={handleAddressChange} id="number" label="Număr" variant="outlined" key='number' />
+                    <Grid container item style={{ paddingTop: 8 }}>
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
+                            <TextField required value={address.number || ''} onChange={handleAddressChange} id="number" label="Număr" variant="outlined" key='number' fullWidth />
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField value={address.block || ''} id="block" onChange={handleAddressChange} label="Bloc" variant="outlined" key='block' />
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
+                            <TextField value={address.block || ''} id="block" onChange={handleAddressChange} label="Bloc" variant="outlined" key='block' fullWidth />
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField value={address.floor || ''} id="floor" onChange={handleAddressChange} label="Etaj" variant="outlined" key='floor' />
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
+                            <TextField value={address.floor || ''} id="floor" onChange={handleAddressChange} label="Etaj" variant="outlined" key='floor' fullWidth />
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField value={address.apartment || ''} id="apartment" onChange={handleAddressChange} label="Apartament" variant="outlined" key='apartment' />
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
+                            <TextField value={address.apartment || ''} id="apartment" onChange={handleAddressChange} label="Apartament" variant="outlined" key='apartment' fullWidth />
                         </Grid>
-
-                        <Grid item xs={6}>
-                            <TextField value={address.intercom || ''} id="intercom" onChange={handleAddressChange} label="Interfon" variant="outlined" key='intercom' />
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
+                            <TextField value={address.intercom || ''} id="intercom" onChange={handleAddressChange} label="Interfon" variant="outlined" key='intercom' fullWidth />
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField disabled={addressKey >= 0} value={address.label || ''} onChange={handleAddressChange} required id="label" label="Etichetă" variant="outlined" key='label' />
+                        <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
+                            <TextField disabled={addressKey >= 0} value={address.label || ''} onChange={handleAddressChange} required id="label" label="Etichetă" variant="outlined" key='label' fullWidth />
                         </Grid>
                     </Grid>
                 </>}
-            </Grid>
-        </Paper>
+        </Grid>
     )
 }

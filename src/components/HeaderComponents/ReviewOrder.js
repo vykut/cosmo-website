@@ -59,7 +59,9 @@ export default function ReviewOrder({ placeOrder }) {
                             <Header title='Informații adresă' />
                         </Grid>
                         <Grid item style={{ width: '100%' }}>
-                            <AddressForm address={address} setAddress={setAddress} />
+                            <Paper className={classes.paper} >
+                                <AddressForm address={address} setAddress={setAddress} />
+                            </Paper>
                         </Grid>
                     </Grid>
                     <Grid container item direction='column'>

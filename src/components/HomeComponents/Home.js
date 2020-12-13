@@ -5,7 +5,7 @@ import CosmoMenu from './Menu';
 import StickyBox from "react-sticky-box/dist/esnext";
 import ProductsPage from './ProductsPage';
 
-export const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => ({
     breadcrumbs: {
         margin: theme.spacing(2),
     },
