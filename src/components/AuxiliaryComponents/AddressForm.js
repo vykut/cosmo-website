@@ -1,5 +1,8 @@
 import { FormControl, Grid, makeStyles, MenuItem, Paper, Select, TextField } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { isEmpty } from 'react-redux-firebase'
+import { firestoreDB } from '../..'
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -9,9 +12,13 @@ const useStyles = makeStyles((theme) => ({
 
 export default function AddressForm({ address, setAddress, addressKey, setAddressKey }) {
     const classes = useStyles()
+    const firestore = firestoreDB
+    const auth = useSelector(state => state.firebase.auth);
+
 
     const [componentAddressKey, setComponentAddressKey] = useState('')
     const [componentAddress, setComponentAddress] = useState({})
+    const [addresses, setAddresses] = useState([])
 
     if (address === undefined || setAddress === undefined) {
         address = componentAddress
@@ -29,13 +36,15 @@ export default function AddressForm({ address, setAddress, addressKey, setAddres
             case '':
             case -1:
                 return setAddress({
-                    apartment: '',
-                    block: '',
-                    floor: '',
-                    intercom: '',
-                    label: '',
-                    number: '',
-                    street: '',
+                    data: {
+                        apartment: '',
+                        block: '',
+                        floor: '',
+                        intercom: '',
+                        label: '',
+                        number: '',
+                        street: '',
+                    }
                 })
             default:
                 return setAddress(addresses[e.target.value])
@@ -45,31 +54,27 @@ export default function AddressForm({ address, setAddress, addressKey, setAddres
     const handleAddressChange = (e) => {
         setAddress({
             ...address,
-            [e.target.id]: e.target.value
+            data: {
+                ...address.data,
+                [e.target.id]: e.target.value
+            }
         })
     }
 
     //fetch addresses
-    const addresses = [
-        {
-            apartment: '34',
-            block: 'B',
-            floor: '3',
-            intercom: 'floor 3',
-            label: 'Acasă',
-            number: 17,
-            street: 'Sfintii Voievozi',
-        },
-        {
-            apartment: '',
-            block: '',
-            floor: '9',
-            intercom: 'Vodafone',
-            label: 'Serviciu',
-            number: 2,
-            street: 'Calea Dorobantilor',
-        },
-    ]
+    useEffect(() => {
+        if (!isEmpty(auth)) {
+            const unsubscribe = firestore.collection('addresses').where('userID', '==', auth.uid)
+                .onSnapshot(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach((doc) => {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setAddresses(docs)
+                })
+            return () => unsubscribe()
+        }
+    }, [auth, firestore])
 
     return (
         <Grid container direction='column' >
@@ -86,7 +91,7 @@ export default function AddressForm({ address, setAddress, addressKey, setAddres
                 >
                     <MenuItem value={''} disabled>Selectează adresa de livrare</MenuItem>
                     {addresses.map((address, index) => <MenuItem value={index} key={index}>
-                        {address.label}
+                        {address.data.label}
                     </MenuItem>)}
                     <MenuItem value={-1}>Adresă nouă</MenuItem>
                 </Select>
@@ -97,7 +102,7 @@ export default function AddressForm({ address, setAddress, addressKey, setAddres
                     <Grid item style={{ paddingTop: 8 }}>
                         <TextField
                             required
-                            value={address.street || ''}
+                            value={address.data.street || ''}
                             onChange={handleAddressChange}
                             id="street"
                             label="Strada"
@@ -108,22 +113,22 @@ export default function AddressForm({ address, setAddress, addressKey, setAddres
                     </Grid>
                     <Grid container item style={{ paddingTop: 8 }}>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
-                            <TextField required value={address.number || ''} onChange={handleAddressChange} id="number" label="Număr" variant="outlined" key='number' fullWidth />
+                            <TextField required value={address.data.number || ''} onChange={handleAddressChange} id="number" label="Număr" variant="outlined" key='number' fullWidth />
                         </Grid>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
-                            <TextField value={address.block || ''} id="block" onChange={handleAddressChange} label="Bloc" variant="outlined" key='block' fullWidth />
+                            <TextField value={address.data.block || ''} id="block" onChange={handleAddressChange} label="Bloc" variant="outlined" key='block' fullWidth />
                         </Grid>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
-                            <TextField value={address.floor || ''} id="floor" onChange={handleAddressChange} label="Etaj" variant="outlined" key='floor' fullWidth />
+                            <TextField value={address.data.floor || ''} id="floor" onChange={handleAddressChange} label="Etaj" variant="outlined" key='floor' fullWidth />
                         </Grid>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
-                            <TextField value={address.apartment || ''} id="apartment" onChange={handleAddressChange} label="Apartament" variant="outlined" key='apartment' fullWidth />
+                            <TextField value={address.data.apartment || ''} id="apartment" onChange={handleAddressChange} label="Apartament" variant="outlined" key='apartment' fullWidth />
                         </Grid>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingRight: 8 }}>
-                            <TextField value={address.intercom || ''} id="intercom" onChange={handleAddressChange} label="Interfon" variant="outlined" key='intercom' fullWidth />
+                            <TextField value={address.data.intercom || ''} id="intercom" onChange={handleAddressChange} label="Interfon" variant="outlined" key='intercom' fullWidth />
                         </Grid>
                         <Grid item xs={6} style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 8 }}>
-                            <TextField disabled={addressKey >= 0} value={address.label || ''} onChange={handleAddressChange} required id="label" label="Etichetă" variant="outlined" key='label' fullWidth />
+                            <TextField disabled={addressKey >= 0} value={address.data.label || ''} onChange={handleAddressChange} required id="label" label="Etichetă" variant="outlined" key='label' fullWidth />
                         </Grid>
                     </Grid>
                 </>}

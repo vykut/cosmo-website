@@ -100,25 +100,25 @@ export default function ProductsPage() {
     }
 
     const sortedProducts = () => {
-        let productsCopy = products
+        var productsCopy = [...products]
         switch (state.sort) {
             case 0:
-                break
+                return products
             case 1:
-                productsCopy.sort(function (a, b) { return a.data.price > b.data.price })
+                productsCopy.sort(function (a, b) { return a.data.price > b.data.price ? 1 : -1 })
                 break
             case 2:
-                productsCopy.sort(function (a, b) { return a.data.price < b.data.price })
+                productsCopy.sort(function (a, b) { return a.data.price < b.data.price ? 1 : -1 })
                 break
             case 3:
-                productsCopy.sort(function (a, b) { return a.data.name > b.data.name })
+                productsCopy.sort(function (a, b) { return a.data.name > b.data.name ? 1 : -1 })
                 break
             case 4:
-                productsCopy.sort(function (a, b) { return a.data.name < b.data.name })
+                productsCopy.sort(function (a, b) { return a.data.name < b.data.name ? 1 : -1 })
                 break
             default:
+                return products
         }
-        console.log(productsCopy)
         return productsCopy
     }
 

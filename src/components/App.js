@@ -12,6 +12,7 @@ import { capitalize } from '../utils/utils';
 import { DialogProvider } from '../contexts/DialogContext';
 import { useSelector } from 'react-redux'
 import { isLoaded, isEmpty, useFirestoreConnect } from 'react-redux-firebase'
+import { CartProvider } from '../contexts/CartContext';
 
 // A wrapper for <Route> that redirects to the login
 // screen if you're not yet authenticated or if auth is not
@@ -106,71 +107,32 @@ function App() {
         </Breadcrumbs>
       </Route>
     )
-
-    // return <Route>
-    //   {({ location }) => {
-    //     const pathnames = location.pathname.split('/').filter(x => x);
-    //     return (
-    //       <Breadcrumbs aria-label="Breadcrumb" className={classes.breadcrumbs}>
-    //         <Link component={RouterLink} to='/acasa'>
-    //           <StoreIcon />
-    //         </Link>
-    //         {pathnames.map((value, index) => {
-    //           const last = index === pathnames.length - 1;
-    //           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
-
-    //           if (value === 'p') {
-    //             return null
-    //           }
-
-    //           if (value === 'categorii' || value === 'acasa') {
-    //             return <Typography className={classes.infoTextColor} key={to}>
-    //               {capitalize(value)}
-    //             </Typography>
-    //           }
-
-    //           // if(pathnames.length === )
-
-    //           return last ? (
-    //             <Typography className={classes.infoTextColor} key={to}>
-    //               {capitalize(value)}
-    //             </Typography>
-    //           ) : (
-    //               <Link component={RouterLink} to={to} key={to} underline='always'>
-    //                 <Typography className={classes.infoTextColor} key={to}>
-    //                   {capitalize(value)}
-    //                 </Typography>
-    //               </Link>
-    //             );
-    //         })}
-    //       </Breadcrumbs>
-    //     );
-    //   }}
-    // </Route>
   }
 
   return (
-    <DialogProvider>
-      <Header />
-      <Switch>
-        <Route path='/acasa' >
-          <CosmoBreadcrumbs />
-          <Home />
-        </Route>
-        <PrivateRoute exact path='/contul-meu'>
-          <AccountOverview />
-        </PrivateRoute>
-        <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?/p/:productID'>
-          <CosmoBreadcrumbs />
-          <ProductPage />
-        </Route>
-        <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?'>
-          <CosmoBreadcrumbs />
-          <ProductsPage />
-        </Route>
-        <Redirect to='/acasa' />
-      </Switch>
-    </DialogProvider>
+    <CartProvider>
+      <DialogProvider>
+        <Header />
+        <Switch>
+          <Route path='/acasa' >
+            <CosmoBreadcrumbs />
+            <Home />
+          </Route>
+          <PrivateRoute exact path='/contul-meu'>
+            <AccountOverview />
+          </PrivateRoute>
+          <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?/p/:productID'>
+            <CosmoBreadcrumbs />
+            <ProductPage />
+          </Route>
+          <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?'>
+            <CosmoBreadcrumbs />
+            <ProductsPage />
+          </Route>
+          <Redirect to='/acasa' />
+        </Switch>
+      </DialogProvider>
+    </CartProvider>
   )
 }
 

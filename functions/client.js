@@ -46,7 +46,7 @@ exports.editAddress = functions
 
     let addressRef = admin.firestore().collection('addresses').doc(data.addressID)
 
-    if (data.address && data.number && data.label) {
+    if (data.street && data.number && data.label) {
       return addressRef.set({
         apartment: data.apartment,
         block: data.block,
@@ -73,12 +73,12 @@ exports.addAddress = functions
   .https.onCall((data, context) => {
     if (!context.auth) {
       return {
-        error: 'Numai utilizatorii autentificati pot salva adrese de livrare'
+        error: 'Numai utilizatorii autentificati pot salva adrese de livrare.'
       }
     }
 
     let addressRef = admin.firestore().collection('addresses')
-    if (data.address && data.number && data.label) {
+    if (data.street && data.number && data.label) {
       return addressRef.add({
         apartment: data.apartment,
         block: data.block,
@@ -89,15 +89,15 @@ exports.addAddress = functions
         street: data.street,
         userID: context.auth.uid
       })
-        .then(() => {
-          console.log(`Utilizatorul ${context.auth.uid} si-a adaugat o noua adresa ${data.addressID}`)
+        .then((docRef) => {
+          console.log(`Utilizatorul ${context.auth.uid} si-a adaugat o noua adresa ${docRef.id}.`)
           return {
-            result: `A fost adaugata o noua adresa`
+            result: `A fost adaugata o noua adresa.`
           }
         })
     } else {
       return {
-        error: 'Adresa, numarul si eticheta trebuie completate'
+        error: 'Adresa, numarul si eticheta trebuie completate.'
       }
     }
 

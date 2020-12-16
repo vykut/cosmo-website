@@ -1,10 +1,14 @@
 import { Box, Button, Drawer, Grid, IconButton, makeStyles, Paper, Typography, withStyles } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import ListProduct from './ListProduct';
 import CloseIcon from '@material-ui/icons/Close';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { firestoreDB } from '../..';
+import { isEmpty } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
+import { useCart } from '../../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({
     drawer: {
@@ -46,25 +50,13 @@ const useStyles = makeStyles((theme) => ({
 }))
 export default function Cart({ reviewOrder }) {
     const classes = useStyles()
-
-
-    //fetch cart
-
-    const product = {
-        image: "https://vistapointe.net/images/heineken-lager-wallpaper-3.jpg",
-        name: 'Bere blondă sticlă 0.33 l Heineken',
-        price: 5,
-        id: 'bere-heineken',
-        category: 'bauturi',
-    }
-
-    const products = [product, product, product, product, product, product,]
-
+    // const [products, setProducts] = useState([])
+    const cart = useCart()
 
     return (
         <>
             <Grid container item direction='column' spacing={2}>
-                {products.map((product, index) => {
+                {cart.getProductsInCart().map((product, index) => {
                     return <Grid item key={index}>
                         <ListProduct product={product} />
                     </Grid>
@@ -79,7 +71,7 @@ export default function Cart({ reviewOrder }) {
                             </Grid>
                             <Grid item>
                                 <Typography variant='h6'>
-                                    220 RON
+                                    {Math.round((cart.getCart().totalPrice + Number.EPSILON) * 100) / 100} RON
                                 </Typography>
                             </Grid>
                         </Grid>

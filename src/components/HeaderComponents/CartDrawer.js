@@ -9,6 +9,7 @@ import Cart from './Cart';
 import ReviewOrder from './ReviewOrder';
 import { isLoaded, isEmpty } from "react-redux-firebase";
 import { useSelector } from "react-redux";
+import { useDialog } from '../../contexts/DialogContext';
 
 const useStyles = makeStyles((theme) => ({
     drawer: {
@@ -90,18 +91,18 @@ function useDrawer({ reducer = drawerReducer } = {}) {
 export default function CartDrawer(props) {
     const classes = useStyles()
     const auth = useSelector(state => state.firebase.auth)
-
-
+    const dialog = useDialog()
 
     const { back, showCart, showReview, showOrder, title, viewCart, reviewOrder, placeOrder, goBack, } = useDrawer({
         reducer(currentState, action) {
             const changes = drawerReducer(currentState, action)
-            if (isLoaded(auth) && !isEmpty(auth)) {
+            if (isEmpty(auth)) {
                 //trigger login modal
                 console.log('User not logged in')
+                dialog.showDialog()
                 return currentState
             } else {
-                // console.log(currentUser)
+                console.log(auth)
                 return changes
             }
         }

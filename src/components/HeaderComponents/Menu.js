@@ -114,6 +114,7 @@ export default function AppBarMenu() {
         <div>
             <Tabs
                 value={tab}
+
                 onChange={handleTabChange}
                 indicatorColor="secondary"
                 textColor="secondary"

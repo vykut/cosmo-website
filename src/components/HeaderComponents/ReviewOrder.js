@@ -1,5 +1,7 @@
 import { Box, Button, FormControl, Grid, makeStyles, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { firebaseFunctions, firestoreDB } from '../..'
 import AddressForm from '../AuxiliaryComponents/AddressForm'
 import PaymentTypeForm from '../AuxiliaryComponents/PaymentTypeForm'
 
@@ -16,6 +18,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ReviewOrder({ placeOrder }) {
     const classes = useStyles()
+    const firestore = firestoreDB
+    const functions = firebaseFunctions
+    const auth = useSelector(state => state.firebase.auth);
 
     // save address if it's a new one
     const [address, setAddress] = useState({})
@@ -29,18 +34,24 @@ export default function ReviewOrder({ placeOrder }) {
 
         try {
             setLoading(true)
-            await placeOrder()
+            var docRef
+            if (address.id) {
+                await firestore.collection('addresses').doc(address.id)
+                    .update(address.data)
+                docRef = { id: address.id }
+            } else {
+                docRef = await firestore.collection('addresses')
+                    .add({ ...address.data, userID: auth.uid })
+            }
+            await functions.httpsCallable('placeOrder')({ addressID: docRef.id, payment: paymentType, notes: notes })
+            placeOrder()
             // setAlert({ severity: 'success', message: 'Te-ai conectat cu succes.' })
-            // toggleDialog(false)
         } catch (error) {
             // setAlert({ severity: 'error', message: error.message })
-            console.log('eroare la review order')
+            console.log('eroare la review order', error)
         }
         setLoading(false)
     }
-
-
-
 
     function Header({ title }) {
         return <Typography variant='body1' component='div' className={classes.header}>

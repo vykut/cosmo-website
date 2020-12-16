@@ -3,6 +3,9 @@ import React, { useState } from 'react'
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Save';
 import UpdateIcon from '@material-ui/icons/Update';
+import { useSelector } from 'react-redux';
+import { firebaseFunctions, firestoreDB } from '../..';
+import { isEmpty } from 'react-redux-firebase';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -35,20 +38,16 @@ const useStyles = makeStyles((theme) => ({
 
 export default function PersonalData() {
     const classes = useStyles()
-
-
-    const dummyUser = {
-        email: 'email@email.com',
-        firstName: 'ion',
-        lastName: 'ionescu',
-        phone: '0723134432'
-    }
+    const auth = useSelector(state => state.firebase.auth);
+    const firestore = firestoreDB
+    const functions = firebaseFunctions
 
     const [enabled, setEnabled] = useState(false)
-    const [userData, setUserData] = useState(dummyUser)
+    const [userData, setUserData] = useState({})
 
 
     //fetch userData
+    const profile = useSelector(state => state.firebase.profile)
 
     const handleChange = (e) => {
         setUserData({
@@ -60,9 +59,15 @@ export default function PersonalData() {
     const handleClick = (type) => (e) => {
         switch (type) {
             case 'update':
+                functions.httpsCallable('editPersonalData')({ firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone })
                 return setEnabled(true)
             case 'cancel':
-                setUserData(dummyUser)
+                setUserData({
+                    email: profile.email,
+                    firstName: profile.firstName,
+                    lastName: profile.lastName,
+                    phone: profile.phone,
+                })
                 return setEnabled(false)
             default:
                 return setEnabled(false)
@@ -87,6 +92,7 @@ export default function PersonalData() {
                     <Grid item>
                         <TextField
                             value={userData.email}
+                            defaultValue={!isEmpty(profile) && profile.email}
                             label="Email"
                             variant="outlined"
                             fullWidth
@@ -99,6 +105,7 @@ export default function PersonalData() {
                         <TextField
                             required
                             value={userData.firstName}
+                            defaultValue={!isEmpty(profile) && profile.firstName}
                             onChange={handleChange}
                             id="firstName"
                             label="Prenume"
@@ -113,6 +120,7 @@ export default function PersonalData() {
                         <TextField
                             required
                             value={userData.lastName}
+                            defaultValue={!isEmpty(profile) && profile.lastName}
                             onChange={handleChange}
                             id="lastName"
                             label="Prenume"
@@ -127,6 +135,7 @@ export default function PersonalData() {
                         <TextField
                             required
                             value={userData.phone}
+                            defaultValue={!isEmpty(profile) && profile.phone}
                             onChange={handleChange}
                             id="phone"
                             label="Telefon"

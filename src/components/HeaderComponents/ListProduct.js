@@ -1,9 +1,11 @@
 import { Box, Button, Drawer, Grid, IconButton, makeStyles, Link, Paper, Typography, withStyles } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { Link as RouterLink } from 'react-router-dom/'
+import { useCart } from '../../contexts/CartContext';
+import { firestoreDB } from '../..';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -75,60 +77,79 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ListProduct({ product }) {
     const classes = useStyles()
+    const cart = useCart()
+    const firestore = firestoreDB
 
-    const [state, setState] = useState({ quantity: 1 })
+    const [state, setState] = useState(product.data.quantity)
+    const [fetchedProduct, setFetchedProduct] = useState({})
 
-    // fetch product from ID
+    useEffect(() => {
+        const unsubscribe = firestore.collection('products').doc(product.id)
+            .onSnapshot(function (doc) {
+                setFetchedProduct(doc.data())
+            })
+        return () => unsubscribe()
+    }, [firestore, product.id])
+
+
+    const productURL = useCallback(() => {
+        var url = '/categorii'
+        if (fetchedProduct.category) {
+            url += `/${fetchedProduct.category}`
+        }
+        if (fetchedProduct.subcategory1) {
+            url += `/${fetchedProduct.subcategory1}`
+        }
+        if (fetchedProduct.subcategory2) {
+            url += `/${fetchedProduct.subcategory2}`
+        }
+        url += `/p/${product.id}`
+        return url
+    }, [product.id, fetchedProduct])
 
     const adjustQuantity = (increment) => {
-        if (increment && state.quantity < 20) {
-            setState({
-                ...state,
-                quantity: state.quantity + 1
-            })
-            return
+        if (increment && product.data.quantity < 20) {
+
+            return cart.incrementQuantity(product.id)
         }
-        if (!increment && state.quantity > 1) {
-            setState({
-                ...state,
-                quantity: state.quantity - 1
-            })
-            return
+        if (!increment && product.data.quantity > 1) {
+            return cart.decrementQuantity(product.id)
         }
-        if (!increment && state.quantity === 1) {
+        if (!increment && product.data.quantity === 1) {
             removeProductFromCart()
         }
     }
 
     const removeProductFromCart = () => {
         // remove item from cart
+        cart.deleteProductFromCart(product.id)
     }
 
     return (
         <Paper className={classes.paper}>
             <Grid container direction='column' spacing={2}>
                 <Grid item>
-                    <Link component={RouterLink} to={`/categorii/${product.category}/p/${product.id}`} underline='none'>
+                    <Link component={RouterLink} to={productURL} underline='none'>
                         <Grid container>
                             <Grid item xs={3} >
-                                <img src={product.image} alt={product.name} className={classes.image} />
+                                <img src={fetchedProduct.image} alt={fetchedProduct.name} className={classes.image} />
                             </Grid>
                             <Grid container item direction='column' xs={9} justify='space-around' alignItems='center'>
                                 <Grid item >
                                     <Typography >
-                                        {product.name}
+                                        {fetchedProduct.name}
                                     </Typography>
                                 </Grid>
                                 <Grid container item justify='space-around'>
                                     <Grid item>
                                         <Typography color='textPrimary'>
-                                            Preț {product.price} RON
+                                            Preț {Math.round((fetchedProduct.price + Number.EPSILON) * 100) / 100} RON
                                             </Typography>
                                     </Grid>
                                     <Grid item>
                                         <Typography component='div' color='textPrimary'>
                                             <Box fontWeight='fontWeightBold'>
-                                                Subtotal {state.quantity * product.price} RON
+                                                Subtotal {Math.round((product.data.quantity * fetchedProduct.price + Number.EPSILON) * 100) / 100} RON
                                         </Box>
                                         </Typography>
                                     </Grid>
@@ -155,7 +176,7 @@ export default function ListProduct({ product }) {
                                 component='div'
                             >
                                 <Box fontWeight='fontWeightBold'>
-                                    {state.quantity}
+                                    {product.data.quantity}
                                 </Box>
                             </Typography>
                             <IconButton

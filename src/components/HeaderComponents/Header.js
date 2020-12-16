@@ -21,6 +21,7 @@ import { useSelector } from "react-redux";
 import { useDialog } from '../../contexts/DialogContext';
 import { capitalize } from '../../utils/utils';
 import { firestoreDB } from '../..';
+import { useCart } from '../../contexts/CartContext';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -125,10 +126,9 @@ export default function Header({ tab, handleTabChange }) {
     const profile = useSelector(state => state.firebase.profile)
     const dialog = useDialog()
     const firestore = firestoreDB
-
+    const cart = useCart()
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-    const [badge, setBadge] = useState(0)
 
     const toggleDrawer = (isOpen) => (e) => {
         if (e.type === 'keydown' && (e.key === 'Tab' || e.key === 'Shift')) {
@@ -136,19 +136,6 @@ export default function Header({ tab, handleTabChange }) {
         }
         setIsDrawerOpen(isOpen)
     }
-
-    useEffect(() => {
-        if (auth) {
-            const unsubscribe = firestore.collection('carts').doc(auth.uid)
-                .onSnapshot(function (doc) {
-                    setBadge(doc.data().quantity)
-                })
-            return () => unsubscribe()
-        }
-    }, [auth, firestore])
-
-
-
 
     const handleAccount = () => {
         if (isEmpty(auth)) {
@@ -212,7 +199,7 @@ export default function Header({ tab, handleTabChange }) {
                             <Typography variant='body1' className={classes.label}>
                                 Favorite
                             </Typography>
-                            <Badge badgeContent={4} color="secondary">
+                            <Badge badgeContent={!isEmpty(profile) && profile.favoriteProducts ? profile.favoriteProducts.length : 0} color="secondary">
                                 <FavoriteIcon />
                             </Badge>
                         </Button>
@@ -227,7 +214,7 @@ export default function Header({ tab, handleTabChange }) {
                             <Typography variant='body1' className={classes.label}>
                                 Coș
                             </Typography>
-                            <Badge badgeContent={badge} color="secondary">
+                            <Badge badgeContent={cart.getCart().quantity} color="secondary">
                                 <ShoppingCartIcon />
                             </Badge>
                         </Button>

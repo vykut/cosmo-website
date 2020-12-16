@@ -9,6 +9,7 @@ import ProductsRow from '../HomeComponents/ProductsRow';
 import { useParams } from 'react-router-dom';
 import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
 import { useSelector } from 'react-redux';
+import { useCart } from '../../contexts/CartContext'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -84,6 +85,7 @@ const useStyles = makeStyles((theme) => ({
 export default function ProductPage() {
     const classes = useStyles()
     const { productID } = useParams()
+    const cart = useCart()
 
     const [state, setState] = useState({ quantity: 1 })
     const [isFavorite, setIsFavorite] = useState(false)
@@ -128,11 +130,11 @@ export default function ProductPage() {
 
     const product = useSelector((state) => state.firestore.data.products && state.firestore.data.products[productID])
 
-    console.log(product, 'produs')
-    console.log(productID)
     const addToCart = () => {
         // to add firebase logic
         // show snackbar with succes
+        if (productID && state.quantity && product && product.price)
+            cart.addProductToCart(productID, product.price, state.quantity,)
     }
 
     return (

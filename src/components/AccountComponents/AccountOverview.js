@@ -8,6 +8,7 @@ import AddressForm from '../AuxiliaryComponents/AddressForm';
 import { Alert } from '@material-ui/lab';
 import PastOrders from './PastOrders';
 import { useFirebase } from 'react-redux-firebase';
+import { firebaseFunctions } from '../..';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -41,6 +42,7 @@ const useStyles = makeStyles((theme) => ({
 export default function AccountOverview() {
     const classes = useStyles()
     const firebase = useFirebase()
+    const functions = firebaseFunctions
 
     const [addressKey, setAddressKey] = useState('')
     const [address, setAddress] = useState({})
@@ -49,8 +51,14 @@ export default function AccountOverview() {
         severity: 'error'
     })
 
-    const handleAddress = (e) => {
+    const handleAddress = async (e) => {
         e.preventDefault()
+        console.log(address.data)
+        if (addressKey === -1) {
+            await functions.httpsCallable('addAddress')({ ...address.data })
+        } else {
+            await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
+        }
         setAddressKey('')
         setAddress({})
         setAlert({
@@ -60,7 +68,8 @@ export default function AccountOverview() {
         // save address in DB
     }
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        await functions.httpsCallable('deleteAddress')({ addressID: address.id })
         setAddressKey('')
         setAddress({})
         setAlert({

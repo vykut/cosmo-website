@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom'
 import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
 import { useSelector } from 'react-redux';
 import { firebaseFunctions } from '..';
+import { Functions } from '@material-ui/icons';
+import { useCart } from '../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -90,6 +92,7 @@ const useStyles = makeStyles((theme) => ({
 export default function ProductBox({ productID }) {
     const classes = useStyles()
     const functions = firebaseFunctions
+    const cart = useCart()
 
     const { url, path } = useRouteMatch();
 
@@ -101,7 +104,8 @@ export default function ProductBox({ productID }) {
         // to add firebase logic
 
         //then ->
-        setIsFavorite(!isFavorite)
+        functions.httpsCallable('favoriteProduct')({ id: productID })
+        // setIsFavorite(!isFavorite)
 
     }
 
@@ -110,6 +114,8 @@ export default function ProductBox({ productID }) {
         collection: 'products',
         doc: productID
     })
+
+    const profile = useSelector(state => state.firebase.profile)
 
     const fetchedProduct = useSelector(
         ({ firestore: { data } }) => data.products && data.products[productID]
@@ -143,7 +149,8 @@ export default function ProductBox({ productID }) {
 
     const addToCart = () => {
         // to add firebase logic
-        firebaseFunctions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
+        if (productID && quantity && fetchedProduct && fetchedProduct.price)
+            cart.addProductToCart(productID, fetchedProduct.price, quantity)
         // show snackbar with succes
     }
 
@@ -152,7 +159,7 @@ export default function ProductBox({ productID }) {
             { isLoaded(fetchedProduct) && !isEmpty(fetchedProduct) && <Paper className={classes.paper}>
                 <Badge badgeContent={
                     <IconButton className={classes.favorite} onClick={addToFavorite}>
-                        {isFavorite ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
+                        {!isEmpty(profile) && profile.favoriteProducts && profile.favoriteProducts.includes(productID) ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
                     </IconButton>
                 } >
                     <Link className={classes.container} to={productURL}>
