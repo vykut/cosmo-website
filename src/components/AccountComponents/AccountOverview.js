@@ -7,6 +7,7 @@ import PersonalData from './PersonalData'
 import AddressForm from '../AuxiliaryComponents/AddressForm';
 import { Alert } from '@material-ui/lab';
 import PastOrders from './PastOrders';
+import { useFirebase } from 'react-redux-firebase';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -39,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function AccountOverview() {
     const classes = useStyles()
+    const firebase = useFirebase()
 
     const [addressKey, setAddressKey] = useState('')
     const [address, setAddress] = useState({})
@@ -67,16 +69,27 @@ export default function AccountOverview() {
         })
     }
 
+    const logout = () => {
+        firebase.logout()
+    }
+
     return (
         <>
             {/* <Container maxWidth='xs' style={{ marginTop: 24 }}> */}
             <Grid container direction='column' style={{ padding: 16 }}>
-                <Grid item>
-                    <Typography variant='h3' component='div' className={classes.infoTextColor}>
-                        <Box fontWeight='fontWeightBold'>
-                            Contul tău
+                <Grid container item justify='space-between'>
+                    <Grid item>
+                        <Typography variant='h3' component='div' className={classes.infoTextColor}>
+                            <Box fontWeight='fontWeightBold'>
+                                Contul tău
                         </Box>
-                    </Typography>
+                        </Typography>
+                    </Grid>
+                    <Grid item>
+                        <Button onClick={logout} className={classes.errorButtonColor}>
+                            Deconectează-te
+                        </Button>
+                    </Grid>
                 </Grid>
                 <Grid container item>
                     <Grid item md={4} sm={12} style={{ padding: 8, width: '100%' }}>

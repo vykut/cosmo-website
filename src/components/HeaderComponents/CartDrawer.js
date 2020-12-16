@@ -7,7 +7,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Cart from './Cart';
 import ReviewOrder from './ReviewOrder';
-import { useAuth } from '../../contexts/AuthContext'
+import { isLoaded, isEmpty } from "react-redux-firebase";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
     drawer: {
@@ -88,14 +89,14 @@ function useDrawer({ reducer = drawerReducer } = {}) {
 
 export default function CartDrawer(props) {
     const classes = useStyles()
-    const { currentUser } = useAuth()
+    const auth = useSelector(state => state.firebase.auth)
 
 
 
     const { back, showCart, showReview, showOrder, title, viewCart, reviewOrder, placeOrder, goBack, } = useDrawer({
         reducer(currentState, action) {
             const changes = drawerReducer(currentState, action)
-            if (!currentUser) {
+            if (isLoaded(auth) && !isEmpty(auth)) {
                 //trigger login modal
                 console.log('User not logged in')
                 return currentState

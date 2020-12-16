@@ -1,6 +1,6 @@
 import { Button, FormControl, Grid, InputLabel, makeStyles, MenuItem, OutlinedInput, Paper, Select, withStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
-import React from 'react'
+import React, { useState } from 'react'
 
 
 export const useStyles = makeStyles((theme) => ({
@@ -44,9 +44,21 @@ const StyledMenuItem = withStyles((theme) => ({
 }))(MenuItem);
 
 
-export default function ProductsPageHeader({ sort, numberOfProducts, handleChange }) {
+export default function ProductsPageHeader({ sort, numberOfProducts, handleChange, setSearchQuery, }) {
     const classes = useStyles()
 
+    const [search, setSearch] = useState('')
+
+    const handleSearch = (e) => {
+        setSearch(e.target.value)
+    }
+
+    const makeQuery = (e) => {
+        if ((e.type === 'keyup' && e.key === 'Enter') || e.currentTarget.name === 'search') {
+            return setSearchQuery(search)
+        }
+
+    }
     return (
 
         <Paper style={{ padding: 8, margin: 8 }}>
@@ -59,9 +71,12 @@ export default function ProductsPageHeader({ sort, numberOfProducts, handleChang
                         variant='outlined'
                         margin='dense'
                         fullWidth
-
+                        name='searchQuery'
+                        onChange={handleSearch}
+                        onKeyUp={makeQuery}
+                        value={search}
                         startAdornment={
-                            <Button className={classes.iconButton} >
+                            <Button className={classes.iconButton} name='search' onClick={makeQuery}>
                                 <StyledSearchIcon />
                             </Button>
                         } />

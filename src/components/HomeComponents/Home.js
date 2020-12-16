@@ -1,9 +1,11 @@
 import { Breadcrumbs, Grid, Link, makeStyles, Typography } from '@material-ui/core'
 import React, { useEffect, useState, useCallback } from 'react'
-import ProductsRow from './ProductsRow'
 import CosmoMenu from './Menu';
-import StickyBox from "react-sticky-box/dist/esnext";
 import ProductsPage from './ProductsPage';
+import { firebaseConnect, firestoreReducer, isEmpty, isLoaded, populate, useFirestoreConnect } from 'react-redux-firebase';
+import { connect, useSelector } from 'react-redux';
+import { compose } from 'redux';
+import ProductsRow from './ProductsRow';
 
 const useStyles = makeStyles((theme) => ({
     breadcrumbs: {
@@ -26,13 +28,15 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
     const classes = useStyles()
 
-    const product = {
-        image: "https://www.auchan.ro/public/images/hac/h0b/h00/bere-blonda-heineken-033l-8856591794206.jpg",
-        name: 'Bere blonda sticla 0.33 l Heineken',
-        price: 5,
-        id: 'bere-heineken',
-        category: 'bauturi',
-    }
+    useFirestoreConnect([{
+        collection: 'categories',
+        doc: '0klQV3KLSaG9uCWZofCL',
+        subcollections: [{ collection: 'categories' }],
+        storeAs: '0klQV3KLSaG9uCWZofCL-products'
+    }])
+
+    const products = useSelector((state) => state.firestore.data)
+    console.log(products, 'home')
 
     return (
         <div className={classes.mainContainer}>
@@ -45,13 +49,14 @@ export default function Home() {
                 spacing={4}
             >
                 <Grid item>
-                    <ProductsRow category='Produse recent adăugate în catalogul Cosmo Market' products={[product, product, product, product]} />
+                    <ProductsRow categoryID='dOWcOfCSyXGPAwcRJIjD' />
                 </Grid>
                 <Grid item>
-                    <ProductsRow category='Mâncare gătită' products={[product, product, product, product]} />
+                    <ProductsRow categoryID='Dtde6UJzR1aVIWiP3EX6' />
                 </Grid>
-                {/* <ProductsPage category={'yolo'} /> */}
+                {/* <ProductsPage category='{'yolo'}' /> */}
             </Grid >
         </div >
     )
 }
+

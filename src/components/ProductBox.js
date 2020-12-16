@@ -1,5 +1,5 @@
 import { Badge, Box, Button, IconButton, Paper, Typography } from '@material-ui/core'
-import React, { memo, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import { fade, makeStyles } from '@material-ui/core/styles';
@@ -8,6 +8,9 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { useRouteMatch } from 'react-router-dom';
 import { Link } from 'react-router-dom'
+import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
+import { firebaseFunctions } from '..';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -67,10 +70,11 @@ const useStyles = makeStyles((theme) => ({
     },
     image: {
         marginBottom: theme.spacing(3),
-        maxHeight: 100,
-        maxWidth: 100,
+        // maxHeight: 100,
+        // maxWidth: 100,
         width: 'auto',
-        height: 'auto',
+        height: 100,
+        margin: 'auto',
     },
     favorite: {
         color: theme.palette.error.main,
@@ -83,8 +87,9 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export default function ProductBox({ product }) {
+export default function ProductBox({ productID }) {
     const classes = useStyles()
+    const functions = firebaseFunctions
 
     const { url, path } = useRouteMatch();
 
@@ -101,6 +106,29 @@ export default function ProductBox({ product }) {
     }
 
     //fetch product by id
+    useFirestoreConnect({
+        collection: 'products',
+        doc: productID
+    })
+
+    const fetchedProduct = useSelector(
+        ({ firestore: { data } }) => data.products && data.products[productID]
+    )
+
+    const productURL = useCallback(() => {
+        var url = '/categorii'
+        if (fetchedProduct.category) {
+            url += `/${fetchedProduct.category}`
+        }
+        if (fetchedProduct.subcategory1) {
+            url += `/${fetchedProduct.subcategory1}`
+        }
+        if (fetchedProduct.subcategory2) {
+            url += `/${fetchedProduct.subcategory2}`
+        }
+        url += `/p/${productID}`
+        return url
+    }, [productID, fetchedProduct])
 
     const adjustQuantity = (increment) => {
         if (increment && quantity < 20) {
@@ -115,21 +143,22 @@ export default function ProductBox({ product }) {
 
     const addToCart = () => {
         // to add firebase logic
+        firebaseFunctions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
         // show snackbar with succes
     }
 
     return (
         <>
-            <Paper className={classes.paper}>
+            { isLoaded(fetchedProduct) && !isEmpty(fetchedProduct) && <Paper className={classes.paper}>
                 <Badge badgeContent={
                     <IconButton className={classes.favorite} onClick={addToFavorite}>
                         {isFavorite ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
                     </IconButton>
                 } >
-                    <Link className={classes.container} to={`${url}/p/${product.id}`}>
-                        <img className={classes.image} src={product.image} alt={product.name} />
-                        <Typography color='primary' align='center' style={{ maxWidth: 200 }} >
-                            {product.name}
+                    <Link className={classes.container} to={productURL}>
+                        <img className={classes.image} src={fetchedProduct.image} alt={fetchedProduct.name} />
+                        <Typography color='primary' align='center' style={{ maxWidth: 200, height: 48 }} >
+                            {fetchedProduct.name}
                         </Typography>
                     </Link>
                 </Badge>
@@ -163,7 +192,7 @@ export default function ProductBox({ product }) {
                 </div>
                 <Typography variant='h6' color='error' style={{ marginBottom: 10 }}>
                     <Box fontWeight='fontWeightBold'>
-                        {product.price} RON
+                        {fetchedProduct.price} RON
                     </Box>
                 </Typography>
                 <Button
@@ -174,7 +203,7 @@ export default function ProductBox({ product }) {
                 >
                     Adaugă în coș
                     </Button>
-            </Paper>
+            </Paper>}
         </>
     )
 }

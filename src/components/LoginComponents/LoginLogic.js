@@ -6,6 +6,7 @@ import SignIn from './SignIn';
 import SignUp from './SignUp';
 import logo from '../../assets/logo-cosmo-market.svg'
 import websiteAddress from '../../utils/constants'
+import { ComponentTypes } from '../../utils/utils'
 
 
 export const useStyles = makeStyles((theme) => ({
@@ -28,15 +29,15 @@ export const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LoginLogic({ toggleDialog }) {
+
+export default function LoginLogic() {
   const classes = useStyles();
 
-  const [loginComponent, setLoginComponent] = useState('sign-in')
+  const [loginComponent, setLoginComponent] = useState(ComponentTypes.sign_in)
   const [alert, setAlert] = useState({
     message: '',
     severity: 'error'
   })
-
 
   function Copyright() {
     return (
@@ -61,9 +62,9 @@ export default function LoginLogic({ toggleDialog }) {
           </Alert>
         }
       </Container>
-      {loginComponent === 'sign-in' && <SignIn toggleDialog={toggleDialog} setAlert={setAlert} setLoginComponent={setLoginComponent} />}
-      {loginComponent === 'sign-up' && <SignUp toggleDialog={toggleDialog} setAlert={setAlert} setLoginComponent={setLoginComponent} />}
-      {loginComponent === 'reset-password' && <ResetPassword setAlert={setAlert} setLoginComponent={setLoginComponent} />}
+      {loginComponent === ComponentTypes.sign_in && <SignIn setAlert={setAlert} setLoginComponent={setLoginComponent} />}
+      {loginComponent === ComponentTypes.sign_up && <SignUp setAlert={setAlert} setLoginComponent={setLoginComponent} />}
+      {loginComponent === ComponentTypes.reset_password && <ResetPassword setAlert={setAlert} setLoginComponent={setLoginComponent} />}
       <Box mt={8}>
         <Copyright />
       </Box>

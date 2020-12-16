@@ -6,6 +6,9 @@ import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import ProductsRow from '../HomeComponents/ProductsRow';
+import { useParams } from 'react-router-dom';
+import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -20,13 +23,15 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: 'auto',
         marginRight: 'auto',
         maxHeight: 600,
+        minHeight: 300,
         maxWidth: 600,
         [theme.breakpoints.down('xs')]: {
             maxHeight: 300,
             maxWidth: 300,
+            height: 300,
         },
         width: "auto",
-        height: 'auto',
+        margin: 'auto',
     },
     quantitySelector: {
         borderRadius: 5,
@@ -76,16 +81,9 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-const product = {
-    image: "https://vistapointe.net/images/heineken-lager-wallpaper-3.jpg",
-    name: 'Bere blondă sticlă 0.33 l Heineken',
-    price: 5,
-    id: 'bere-heineken',
-    category: 'bauturi'
-}
-
 export default function ProductPage() {
     const classes = useStyles()
+    const { productID } = useParams()
 
     const [state, setState] = useState({ quantity: 1 })
     const [isFavorite, setIsFavorite] = useState(false)
@@ -123,125 +121,137 @@ export default function ProductPage() {
         }
     }
 
+    useFirestoreConnect({
+        collection: 'products',
+        doc: productID
+    })
+
+    const product = useSelector((state) => state.firestore.data.products && state.firestore.data.products[productID])
+
+    console.log(product, 'produs')
+    console.log(productID)
     const addToCart = () => {
         // to add firebase logic
         // show snackbar with succes
     }
 
     return (
-        <Container maxWidth='lg' style={{ marginBottom: 24, marginTop: 24 }}>
-            <Paper className={classes.paper}>
-                <Grid container direction="column" justify='center' spacing={4}>
-                    <Grid container item spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <img src={product.image} alt={product.name} className={classes.image} />
-                        </Grid>
-                        <Grid container item xs={12} sm={6} direction='column' justify='space-around' alignItems='center' spacing={2}>
-                            <Grid item>
-                                {/* {title} */}
-                                <Typography variant='h4' color='primary' align='center'>
-                                    <Box fontWeight='fontWeightMedium'>
-                                        {product.name}
-                                    </Box>
-                                </Typography>
+        <> {isLoaded(product) && !isEmpty(product) &&
+            <Container maxWidth='lg' style={{ marginBottom: 24, marginTop: 24 }}>
+                <Paper className={classes.paper}>
+                    <Grid container direction="column" justify='center' spacing={4}>
+                        <Grid container item spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <img src={product.image} alt={product.name} className={classes.image} />
                             </Grid>
-                            <Grid item>
-                                {/* price */}
-                                <Typography variant='h4' color='error'>
-                                    <Box fontWeight='fontWeightBold'>
-                                        Preț: {product.price} RON
-                                        </Box>
-                                </Typography>
-                            </Grid>
-                            <Grid container item direction='column' alignItems='center' style={{ padding: 8 }} spacing={2}>
-                                {/* quantity selector */}
+                            <Grid container item xs={12} sm={6} direction='column' justify='space-around' alignItems='center' spacing={2}>
                                 <Grid item>
-                                    <Typography variant='h6' className={classes.infoPalette}>
-                                        Cantitate
+                                    {/* {title} */}
+                                    <Typography variant='h4' color='primary' align='center'>
+                                        <Box fontWeight='fontWeightMedium'>
+                                            {product.name}
+                                        </Box>
                                     </Typography>
                                 </Grid>
-                                <Grid item style={{ width: '50%', minWidth: 180, }}>
-                                    <div className={classes.quantitySelector}>
-                                        <IconButton
-                                            className={classes.quantityDecrement}
-                                            onClick={() => { adjustQuantity(false) }}
-                                            id='decrement'
-                                        >
-                                            <RemoveIcon />
-                                        </IconButton>
-                                        <Typography
-                                            className={classes.quantityInput}
-                                            align='center'
-                                            variant='h6'
-                                            component='div'
-                                        >
-                                            {state.quantity}
-                                        </Typography>
-                                        <IconButton
-                                            className={classes.quantityIncrement}
-                                            onClick={() => { adjustQuantity(true) }}
-                                            id='increment'
-                                        >
-                                            <AddIcon />
-                                        </IconButton>
-                                    </div>
+                                <Grid item>
+                                    {/* price */}
+                                    <Typography variant='h4' color='error'>
+                                        <Box fontWeight='fontWeightBold'>
+                                            Preț: {product.price} RON
+                                        </Box>
+                                    </Typography>
                                 </Grid>
-                                <Grid item >
-                                    {/* add to cart */}
-                                    <ButtonGroup >
-                                        <Button
-                                            color='primary'
-                                            variant='contained'
-                                            size='large'
-                                            startIcon={<ShoppingCartIcon />}
-                                            onClick={addToCart}
-                                        >
-                                            Adaugă în coș
+                                <Grid container item direction='column' alignItems='center' style={{ padding: 8 }} spacing={2}>
+                                    {/* quantity selector */}
+                                    <Grid item>
+                                        <Typography variant='h6' className={classes.infoPalette}>
+                                            Cantitate
+                                    </Typography>
+                                    </Grid>
+                                    <Grid item style={{ width: '50%', minWidth: 180, }}>
+                                        <div className={classes.quantitySelector}>
+                                            <IconButton
+                                                className={classes.quantityDecrement}
+                                                onClick={() => { adjustQuantity(false) }}
+                                                id='decrement'
+                                            >
+                                                <RemoveIcon />
+                                            </IconButton>
+                                            <Typography
+                                                className={classes.quantityInput}
+                                                align='center'
+                                                variant='h6'
+                                                component='div'
+                                            >
+                                                {state.quantity}
+                                            </Typography>
+                                            <IconButton
+                                                className={classes.quantityIncrement}
+                                                onClick={() => { adjustQuantity(true) }}
+                                                id='increment'
+                                            >
+                                                <AddIcon />
+                                            </IconButton>
+                                        </div>
+                                    </Grid>
+                                    <Grid item >
+                                        {/* add to cart */}
+                                        <ButtonGroup >
+                                            <Button
+                                                color='primary'
+                                                variant='contained'
+                                                size='large'
+                                                startIcon={<ShoppingCartIcon />}
+                                                onClick={addToCart}
+                                            >
+                                                Adaugă în coș
                                         </Button>
 
-                                        {/* add to favorites */}
-                                        <Button
-                                            className={classes.favoriteButton}
-                                            variant='contained'
-                                            size='small'
-                                            onClick={addToFavorite}
-                                        >
-                                            <FavoriteIcon />
-                                        </Button>
-                                    </ButtonGroup>
+                                            {/* add to favorites */}
+                                            <Button
+                                                className={classes.favoriteButton}
+                                                variant='contained'
+                                                size='small'
+                                                onClick={addToFavorite}
+                                            >
+                                                <FavoriteIcon />
+                                            </Button>
+                                        </ButtonGroup>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
-                    </Grid>
-                    <Grid item>
-                        {/* separator toolbar?*/}
-                    </Grid>
-                    <Grid container direction='column' item spacing={2}>
-                        {/* <Grid item> */}
-                        {/* categorie */}
-                        {/* Categorie: {product.category} */}
-                        {/* </Grid> */}
                         <Grid item>
-                            {/* descriere */}
-                            {product.description}
+                            {/* separator toolbar?*/}
                         </Grid>
-                        <Grid item>
-                            {/* id produs */}
-                            ID: {product.id}
-                        </Grid>
-                        <Grid item>
-                            {/* disclaimer */}
-                            <Typography variant='caption'>
-                                Informația afișată poate fi incompletă sau neactualizată. Consultați întotdeauna produsul fizic pentru cele mai exacte informații și avertismente. Pentru mai multe informații contactați vânzătorul sau producătorul.
+                        <Grid container direction='column' item spacing={2}>
+                            {/* <Grid item> */}
+                            {/* categorie */}
+                            {/* Categorie: {product.category} */}
+                            {/* </Grid> */}
+                            <Grid item>
+                                {/* descriere */}
+                                Descriere: {product.description}
+                            </Grid>
+                            <Grid item>
+                                {/* id produs */}
+                            ID: {productID}
+                            </Grid>
+                            <Grid item>
+                                {/* disclaimer */}
+                                <Typography variant='caption'>
+                                    Informația afișată poate fi incompletă sau neactualizată. Consultați întotdeauna produsul fizic pentru cele mai exacte informații și avertismente. Pentru mai multe informații contactați vânzătorul sau producătorul.
                             </Typography>
+                            </Grid>
+                        </Grid>
+                        <Grid item>
+                            <ProductsRow category='Produse similare' categoryID={'dOWcOfCSyXGPAwcRJIjD'} />
+                            {/* produse similare */}
                         </Grid>
                     </Grid>
-                    <Grid item>
-                        <ProductsRow category='Produse similare' products={[product, product, product, product]} />
-                        {/* produse similare */}
-                    </Grid>
-                </Grid>
-            </Paper>
-        </Container >
+                </Paper>
+            </Container >
+        }
+        </>
     )
 }

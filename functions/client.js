@@ -9,7 +9,6 @@ exports.storageFunctions = require('./storage');
 
 //helper functions
 
-
 // http callable function to edit personal data
 exports.editPersonalData = functions
   .region('europe-west1')
@@ -309,9 +308,9 @@ exports.favoriteProduct = functions
           favoriteProducts: admin.firestore.FieldValue.arrayUnion(data.id)
         })
 
-        console.log(`S-a adaugat produsul ${data.id} in lista de favorite a userului ${context.auth.uid}`)
+        console.log(`S-a adaugat produsul ${data.id} in lista de favorite a userului ${context.auth.uid}.`)
         return {
-          result: `Produsul a fost adaugat in lista de favorite`
+          result: `Produsul a fost adaugat in lista de favorite.`
         }
       }
     })
@@ -323,7 +322,7 @@ exports.addProductToCart = functions
   .https.onCall((data, context) => {
     if (!context.auth) {
       return {
-        error: `Numai utilizatorii autentificati pot adauga produse din cos`
+        error: `Numai utilizatorii autentificati pot adauga produse din cos.`
       }
     }
 
@@ -332,12 +331,12 @@ exports.addProductToCart = functions
 
 
     return productInCartRef.set({
-      quantity: data.quantity
+      quantity: admin.firestore.FieldValue.increment(data.quantity)
     }, { merge: true })
       .then(() => {
         console.log(`Produsul ${data.productID} a fost adaugat in cosul userului ${context.auth.uid}.`)
         return {
-          result: `Produsul a fost adaugat in cos cu succes`
+          result: `Produsul a fost adaugat in cos cu succes.`
         }
       })
   })
@@ -348,7 +347,7 @@ exports.deleteProductFromCart = functions
   .https.onCall((data, context) => {
     if (!context.auth) {
       return {
-        error: `Numai utilizatorii autentificati pot sterge produse din cos`
+        error: `Numai utilizatorii autentificati pot sterge produse din cos.`
       }
     }
 
@@ -434,12 +433,12 @@ exports.cartProductTotal = functions
   .firestore.document('carts/{cartID}/products/{productID}')
   .onWrite(async (change, context) => {
     let productRef = admin.firestore().collection('products').doc(context.params.productID)
-    let orderRef = admin.firestore().collection('carts').doc(context.params.cartID)
+    let cartRef = admin.firestore().collection('carts').doc(context.params.cartID)
 
     let cartProduct = change.after.exists ? change.after.data() : null;
     let oldPrice = change.before.exists ? change.before.data().price : 0
-    let oldQuantity = change.before.exists ? change.before.data().quantity : -1
-    let newQuantity = change.after.exists ? change.after.data().quantity : -1
+    let oldQuantity = change.before.exists ? change.before.data().quantity : 0
+    let newQuantity = change.after.exists ? change.after.data().quantity : 0
 
     if (oldQuantity !== newQuantity) {
       return admin.firestore().runTransaction(async transaction => {
@@ -451,13 +450,15 @@ exports.cartProductTotal = functions
           transaction.set(change.after.ref, {
             price: admin.firestore.FieldValue.increment(newPrice - oldPrice)
           }, { merge: true })
-          transaction.set(orderRef, {
-            totalPrice: admin.firestore.FieldValue.increment(newPrice - oldPrice)
+          transaction.set(cartRef, {
+            totalPrice: admin.firestore.FieldValue.increment(newPrice - oldPrice),
+            quantity: admin.firestore.FieldValue.increment(newQuantity - oldQuantity)
           }, { merge: true })
           // if product has been deleted subtract old price from overall total
         } else {
-          transaction.update(orderRef, {
-            totalPrice: admin.firestore.FieldValue.increment(-oldPrice)
+          transaction.update(cartRef, {
+            totalPrice: admin.firestore.FieldValue.increment(-oldPrice),
+            quantity: admin.firestore.FieldValue.increment(-oldQuantity)
           })
         }
       })

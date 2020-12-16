@@ -1,6 +1,8 @@
 import { Button, Container, Grid, Link, makeStyles, TextField, useTheme } from '@material-ui/core';
 import React, { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext';
+import { useFirebase } from "react-redux-firebase";
+import { useDialog } from '../../contexts/DialogContext';
+import { ComponentTypes } from '../../utils/utils';
 
 export const useStyles = makeStyles((theme) => ({
     form: {
@@ -13,9 +15,10 @@ export const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function SignIn({ setAlert, setLoginComponent, toggleDialog }) {
+export default function SignIn({ setAlert, setLoginComponent }) {
     const classes = useStyles();
-    const { signIn } = useAuth()
+    const firebase = useFirebase();
+    const dialog = useDialog()
 
     const [form, setForm] = useState({})
     const [loading, setLoading] = useState(false)
@@ -27,9 +30,12 @@ export default function SignIn({ setAlert, setLoginComponent, toggleDialog }) {
 
         try {
             setLoading(true)
-            await signIn(form)
+            await firebase.login({
+                email: form.email.trim(),
+                password: form.password.trim()
+            })
             setAlert({ severity: 'success', message: 'Te-ai conectat cu succes.' })
-            toggleDialog(false)
+            dialog.hideDialog()
         } catch (error) {
             setAlert({ severity: 'error', message: error.message })
         }
@@ -76,12 +82,12 @@ export default function SignIn({ setAlert, setLoginComponent, toggleDialog }) {
             </form>
             <Grid container>
                 <Grid item xs>
-                    <Link href="#" variant="body2" color='error' onClick={() => { setLoginComponent('reset-password'); setAlert({}) }}>
+                    <Link href="#" variant="body2" color='error' onClick={() => { setLoginComponent(ComponentTypes.reset_password); setAlert({}) }}>
                         Ai uitat parola?
                         </Link>
                 </Grid>
                 <Grid item>
-                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent('sign-up'); setAlert({}) }}>
+                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent(ComponentTypes.sign_up); setAlert({}) }}>
                         Nu ai cont? Fă-ți unul acum
                         </Link>
                 </Grid>

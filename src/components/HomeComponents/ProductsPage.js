@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Chip, Grid, makeStyles, Paper } from '@material-ui/core';
-import ProductBox from '../ProductBox';
+import ProductBox, { MemoizedProductBox } from '../ProductBox';
 import Pagination from '@material-ui/lab/Pagination';
 import CosmoMenu from './Menu';
 import FilterMenu from './FilterMenu';
 import EuroIcon from '@material-ui/icons/Euro';
 import ProductsPageHeader from './ProductsPageHeader';
 import { useParams, useRouteMatch } from 'react-router-dom';
+import { firestoreDB } from '../..';
 
 export const useStyles = makeStyles((theme) => ({
     productsGrid: {
@@ -21,32 +22,60 @@ export default function ProductsPage() {
 
     const { category, subcategory1, subcategory2 } = useParams();
     const { url, path } = useRouteMatch();
+    const firestore = firestoreDB
 
     const classes = useStyles()
 
-    const product = {
-        image: "https://www.auchan.ro/public/images/hac/h0b/h00/bere-blonda-heineken-033l-8856591794206.jpg",
-        name: 'Bere blonda sticla 0.33 l Heineken',
-        price: 5,
-        id: 'bere-heineken',
-        category: 'bauturi',
-    }
+    const defaultValue = { price: [0, 300] }
 
-    const [products, setProducts] = useState([product, product, product, product, product, product,
-        product, product, product, product, product, product, product, product, product, product,
-        product, product, product, product])
-
-
+    const [products, setProducts] = useState([])
 
     const [pages, setPages] = useState(3)
     const [state, setState] = useState({ sort: 0, numberOfProducts: 24 })
+    const [searchQuery, setSearchQuery] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
-    const [filter, setFilter] = useState({})
+    const [filter, setFilter] = useState(defaultValue)
 
-    const defaultValue = { price: [10, 323] }
+
 
     // set default value on fetch
     //fetch products
+    useEffect(() => {
+
+        var unsubscribe;
+
+        if (subcategory2) {
+            unsubscribe = firestore.collection('products').where('subcategory2', '==', subcategory2)
+                .onSnapshot(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach(function (doc) {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setProducts(docs)
+                })
+        } else if (subcategory1) {
+            unsubscribe = firestore.collection('products').where('subcategory1', '==', subcategory1)
+                .onSnapshot(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach(function (doc) {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setProducts(docs)
+                })
+        } else if (category) {
+            unsubscribe = firestore.collection('products').where('category', '==', category)
+                .onSnapshot(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach(function (doc) {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setProducts(docs)
+                })
+        }
+        return () => {
+            unsubscribe()
+        }
+    }, [category, firestore, subcategory1, subcategory2])
 
     const handleChange = (e, value) => {
         setState({
@@ -60,7 +89,7 @@ export default function ProductsPage() {
         if (JSON.stringify(value) === JSON.stringify(defaultValue[name])) {
             setFilter({
                 ...filter,
-                [name]: null
+                [name]: defaultValue[name]
             })
         } else {
             setFilter({
@@ -70,10 +99,31 @@ export default function ProductsPage() {
         }
     }
 
+    const sortedProducts = () => {
+        let productsCopy = products
+        switch (state.sort) {
+            case 0:
+                break
+            case 1:
+                productsCopy.sort(function (a, b) { return a.data.price > b.data.price })
+                break
+            case 2:
+                productsCopy.sort(function (a, b) { return a.data.price < b.data.price })
+                break
+            case 3:
+                productsCopy.sort(function (a, b) { return a.data.name > b.data.name })
+                break
+            case 4:
+                productsCopy.sort(function (a, b) { return a.data.name < b.data.name })
+                break
+            default:
+        }
+        console.log(productsCopy)
+        return productsCopy
+    }
 
     function ProductsPagination() {
         return (
-
             <Pagination
                 page={currentPage}
                 count={pages}
@@ -118,9 +168,9 @@ export default function ProductsPage() {
                         <FilterMenu defaultValue={defaultValue.price} commitFilter={commitFilter} />
                     </Grid>
                 </Grid>
-                <Grid item container direction='column' justify='center' alignContent='center' alignItems='center' sm>
+                <Grid item container direction='column' justify='space-between' alignContent='center' alignItems='center' sm>
                     <Grid item style={{ width: '100%' }} >
-                        <ProductsPageHeader sort={state.sort} numberOfProducts={state.numberOfProducts} handleChange={handleChange} />
+                        <ProductsPageHeader sort={state.sort} numberOfProducts={state.numberOfProducts} handleChange={handleChange} setSearchQuery={setSearchQuery} />
                     </Grid>
                     <Grid
                         container
@@ -129,11 +179,15 @@ export default function ProductsPage() {
                         alignItems="center"
                         className={classes.productsGrid}
                     >
-                        {products.map((product, index) => {
-                            return <Grid item key={index}>
-                                <ProductBox product={product} key={index} />
-                            </Grid>
-                        })}
+                        {sortedProducts()
+                            .filter((product) => {
+                                return product.data.price >= filter.price[0] && product.data.price <= filter.price[1] && product.data.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").includes(searchQuery)
+                            })
+                            .map((product, index) => {
+                                return <Grid item key={index}>
+                                    <MemoizedProductBox productID={product.id} />
+                                </Grid>
+                            })}
                     </Grid>
                     <Grid item>
                         <ProductsPagination />

@@ -1,8 +1,13 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import ProductBox from '../ProductBox'
 import { makeStyles } from '@material-ui/core/styles'
 import { ChevronRight } from '@material-ui/icons'
 import { Grid, Link, Typography } from '@material-ui/core'
+import { Link as RouterLink } from 'react-router-dom'
+import { firestoreConnect, isEmpty, populate, useFirestoreConnect, isLoaded, useFirestore } from 'react-redux-firebase'
+import { connect, useSelector } from 'react-redux'
+import { compose } from 'redux'
+import { getFirestore } from 'redux-firestore'
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -35,11 +40,41 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function ProductsRow({ category, products }) {
+export default function ProductsRow({ categoryID }) {
     const classes = useStyles()
+    const firestore = useFirestore()
 
-    return (
-        <Grid
+    const [productsIDs, setProductsIDs] = useState({})
+
+    useFirestoreConnect([{
+        collection: 'categories',
+        doc: categoryID,
+        subcollections: [{ collection: 'products' }],
+        storeAs: categoryID
+    }])
+
+    useFirestoreConnect({
+        collection: 'categories',
+        doc: categoryID,
+    })
+
+    const fetchedCategory = useSelector(
+        ({ firestore: { data } }) => data.categories && data.categories[categoryID]
+    )
+
+    const fetchedProducts = useSelector(((state) => state.firestore.data[categoryID]))
+
+    const categoryURL = () => {
+        var url = '/categorii'
+        if (fetchedCategory.parentCategory) {
+            url += `/${fetchedCategory.parentCategory}`
+        }
+        url += `/${categoryID}`
+        return url
+    }
+
+    return (<>
+        { isLoaded(fetchedCategory) && !isEmpty(fetchedCategory) && <Grid
             container
             direction='column'
             justify='space-between'
@@ -51,12 +86,12 @@ export default function ProductsRow({ category, products }) {
             >
                 <Grid item >
                     <Typography variant='h5' style={{ marginBottom: 20 }} className={classes.title}>
-                        {category}
+                        {fetchedCategory.name}
                     </Typography>
                 </Grid>
                 {/* <div style={{ flexGrow: '5' }}></div> */}
                 <Grid item>
-                    <Link href='#' underline='none' className={classes.link}>
+                    <Link component={RouterLink} to={categoryURL} underline='none' className={classes.link}>
                         <Typography className={classes.title}>
                             Descoperă produsele
                         </Typography>
@@ -68,13 +103,15 @@ export default function ProductsRow({ category, products }) {
                 direction="row"
                 justify="space-around"
             >
-                {products.map((product, index) => {
+                {isLoaded(fetchedProducts) && !isEmpty(fetchedProducts) && Object.keys(fetchedProducts).map((productID, index) => {
                     return <Grid item key={index}>
-                        <ProductBox product={product} key={index} />
+                        <ProductBox productID={productID} />
                     </Grid>
                 })}
             </Grid>
         </Grid>
+        }
+    </>
     )
 }
 

@@ -6,8 +6,9 @@ import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
 import Container from '@material-ui/core/Container';
 import { Typography } from '@material-ui/core';
-import { useAuth } from '../../contexts/AuthContext'
 import { makeStyles } from '@material-ui/core/styles';
+import { useFirebase } from "react-redux-firebase";
+import { ComponentTypes } from '../../utils/utils';
 
 export const useStyles = makeStyles((theme) => ({
     form: {
@@ -34,7 +35,7 @@ export const useStyles = makeStyles((theme) => ({
 
 export default function ResetPassword({ setAlert, setLoginComponent }) {
     const classes = useStyles();
-    const { resetPassword } = useAuth()
+    const firebase = useFirebase()
 
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
@@ -47,7 +48,7 @@ export default function ResetPassword({ setAlert, setLoginComponent }) {
 
         try {
             setLoading(true)
-            await resetPassword(email)
+            await firebase.resetPassword(email.trim())
             setAlert({ severity: 'success', message: 'Link-ul de resetare a parolei a fost trimis pe email.' })
         } catch (error) {
             setAlert({ severity: 'error', message: error.message })
@@ -85,7 +86,7 @@ export default function ResetPassword({ setAlert, setLoginComponent }) {
             </form>
             <Grid container justify="flex-end">
                 <Grid item>
-                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent('sign-in'); setAlert({}) }}>
+                    <Link href="#" variant="body2" color='primary' onClick={() => { setLoginComponent(ComponentTypes.sign_in); setAlert({}) }}>
                         Ai deja cont? Conectează-te
                     </Link>
                 </Grid>

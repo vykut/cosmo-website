@@ -54,9 +54,9 @@ const StyledTab = withStyles((theme) => ({
 function indexToPath(index) {
     switch (index) {
         case 0: return '/acasa'
-        case 1: return '/categorii/alimente'
-        case 2: return '/categorii/bauturi'
-        case 3: return '/categorii/tigari'
+        case 1: return '/categorii/0klQV3KLSaG9uCWZofCL'
+        case 2: return '/categorii/LY7gSrR5uwYR4t91EOcA'
+        case 3: return '/categorii/KIdyISkEMmATZsnAhYpk'
         default: return '/acasa'
     }
 }
@@ -103,9 +103,12 @@ export default function AppBarMenu() {
 
     const handleTabChange = (e, index) => {
         console.log(e, index)
-        // setTab(index)
         history.push(indexToPath(index))
     }
+
+    // const handleClick = (e) => {
+    //     history.push(e.target.id)
+    // }
 
     return (
         <div>
@@ -123,6 +126,18 @@ export default function AppBarMenu() {
                 <StyledTab label='Băuturi' />
                 <StyledTab label='Țigări' />
             </Tabs>
-        </div>
+            {/* <Button onClick={handleClick} id={'/acasa'} color='secondary' variant='text' style={{ width: 100 }}>
+                Acasă
+            </Button>
+            <Button onClick={handleClick} id='/categorii/0klQV3KLSaG9uCWZofCL' color='secondary' variant='text' style={{ width: 100 }}>
+                Alimente
+            </Button>
+            <Button onClick={handleClick} id='/categorii/LY7gSrR5uwYR4t91EOcA' color='secondary' variant='text' style={{ width: 100 }}>
+                Băuturi
+            </Button>
+            <Button onClick={handleClick} id='/categorii/KIdyISkEMmATZsnAhYpk' color='secondary' variant='text' style={{ width: 100 }}>
+                Țigări
+            </Button> */}
+        </div >
     );
 }

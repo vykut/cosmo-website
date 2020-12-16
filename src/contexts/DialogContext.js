@@ -1,10 +1,9 @@
 import { Dialog, DialogContent, DialogTitle, Grid, IconButton, makeStyles, useTheme } from '@material-ui/core'
 import React, { useContext, useState, useEffect } from 'react'
-import { auth, functions, editPersonalData } from '../firebase'
-import { capitalize } from '../utils/utils'
-import CloseIcon from '@material-ui/icons/Close';
+import { capitalize, timeout } from '../utils/utils'
 import LoginLogic from '../components/LoginComponents/LoginLogic';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme) => ({
     closeButton: {
@@ -13,18 +12,16 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 
-const AuthContext = React.createContext()
+const DialogContext = React.createContext()
 
-export function useAuth() {
-    return useContext(AuthContext)
+export function useDialog() {
+    return useContext(DialogContext)
 }
 
-export function AuthProvider({ children }) {
+export function DialogProvider({ children }) {
     const classes = useStyles()
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-    const [currentUser, setCurrentUser] = useState()
     const [loginDialogOpen, setLoginDialogOpen] = useState(false)
 
     const toggleDialog = (isOpen) => (e) => {
@@ -34,52 +31,28 @@ export function AuthProvider({ children }) {
         return setLoginDialogOpen(isOpen)
     }
 
-    function signUp(form) {
-        return auth.createUserWithEmailAndPassword(form.email, form.password)
-            .then((user) => {
-                return editPersonalData({ firstName: capitalize(form.firstName), lastName: capitalize(form.lastName), phone: form.phone, email: form.email })
-            })
-    }
 
-    function signIn(form) {
-        return auth.signInWithEmailAndPassword(form.email, form.password)
-    }
-
-    function resetPassword(email) {
-        return auth.sendPasswordResetEmail(email)
-    }
-
-    function signOut() {
-        return auth.signOut()
-    }
-
-    function login() {
+    const showDialog = () => {
         setLoginDialogOpen(true)
     }
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            setCurrentUser(user)
-        })
-
-        return unsubscribe
-    }, [])
+    const hideDialog = async () => {
+        await timeout(500)
+        setLoginDialogOpen(false)
+    }
 
     const value = {
-        currentUser,
-        signUp,
-        signIn,
-        resetPassword,
-        signOut,
-        login,
+        showDialog,
+        hideDialog,
     }
+
 
     function LoginDialog() {
         return (
             <Dialog maxWidth='sm' fullWidth fullScreen={fullScreen} open={loginDialogOpen} onClose={toggleDialog(false)}>
                 <DialogTitle>
                     <Grid container justify='space-between' alignItems='center'>
-                        < Grid item >
+                        <Grid item>
                             Conectează-te
                         </Grid >
                         <Grid item>
@@ -90,19 +63,20 @@ export function AuthProvider({ children }) {
                     </Grid >
                 </DialogTitle >
                 <DialogContent>
-                    <LoginLogic toggleDialog={setLoginDialogOpen} />
+                    <LoginLogic />
                 </DialogContent>
             </Dialog >
         )
     }
 
+
+
     return (
         <>
-            <AuthContext.Provider value={value}>
+            <DialogContext.Provider value={value}>
                 {children}
-                <LoginDialog />
-            </AuthContext.Provider>
-
+                {loginDialogOpen && <LoginDialog />}
+            </DialogContext.Provider>
         </>
     )
 }

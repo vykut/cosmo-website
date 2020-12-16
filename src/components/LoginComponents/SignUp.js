@@ -4,11 +4,13 @@ import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import { useState } from 'react';
-// import { useStyles } from '../../utils/styles'
 import Divider from '@material-ui/core/Divider';
 import Container from '@material-ui/core/Container';
-import { useAuth } from '../../contexts/AuthContext'
 import { makeStyles } from '@material-ui/core/styles';
+import { isLoaded, isEmpty, useFirebase } from "react-redux-firebase";
+import { useSelector } from "react-redux";
+import { capitalize, ComponentTypes } from '../../utils/utils';
+import { useDialog } from '../../contexts/DialogContext';
 
 export const useStyles = makeStyles((theme) => ({
     form: {
@@ -24,12 +26,15 @@ export const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function SignUp({ setAlert, setLoginComponent, toggleDialog }) {
+export default function SignUp({ setAlert, setLoginComponent }) {
     const classes = useStyles();
-    const { signUp } = useAuth()
+    const firebase = useFirebase();
+    const dialog = useDialog();
+
     const [form, setForm] = useState({})
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
 
 
     const onChangeForField = fieldName => ({ target }) => setForm(state => ({ ...state, [fieldName]: target.value }));
@@ -50,9 +55,13 @@ export default function SignUp({ setAlert, setLoginComponent, toggleDialog }) {
 
         try {
             setLoading(true)
-            await signUp(form)
-            toggleDialog(false)
+            await firebase.createUser({
+                email: form.email.trim(),
+                password: form.password.trim(),
+            })
+            await firebase.updateProfile({ firstName: capitalize(form.firstName), lastName: capitalize(form.lastName), phone: form.phone, favoriteProducts: [] })
             setAlert({ severity: 'success', message: 'Contul a fost creat cu succes.' })
+            dialog.hideDialog()
         } catch (error) {
             setAlert({ severity: 'error', message: error.message })
         }
@@ -163,7 +172,7 @@ export default function SignUp({ setAlert, setLoginComponent, toggleDialog }) {
                     </Button>
                     <Grid container justify="flex-end">
                         <Grid item>
-                            <Link href="#" variant="body2" onClick={() => { setLoginComponent('sign-in'); setAlert({}) }}>
+                            <Link href="#" variant="body2" onClick={() => { setLoginComponent(ComponentTypes.sign_in); setAlert({}) }}>
                                 Ai deja cont? Conectează-te
                             </Link>
                         </Grid>

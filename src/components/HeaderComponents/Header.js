@@ -1,5 +1,5 @@
 import logo from '../../assets/logo-app-bar-cosmo-market.svg';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -14,9 +14,13 @@ import { Button, Dialog, DialogContent, DialogTitle, Drawer, Grid, IconButton, L
 import AppBarMenu from './Menu';
 import CartDrawer from './CartDrawer';
 import LoginLogic from '../LoginComponents/LoginLogic';
-import { useAuth } from '../../contexts/AuthContext';
 import CloseIcon from '@material-ui/icons/Close';
 import { useHistory } from 'react-router-dom';
+import { isLoaded, isEmpty, useFirebase } from "react-redux-firebase";
+import { useSelector } from "react-redux";
+import { useDialog } from '../../contexts/DialogContext';
+import { capitalize } from '../../utils/utils';
+import { firestoreDB } from '../..';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -117,9 +121,14 @@ const useStyles = makeStyles((theme) => ({
 export default function Header({ tab, handleTabChange }) {
     const classes = useStyles();
     const history = useHistory()
-    // const trigger = useScrollTrigger()
+    const auth = useSelector(state => state.firebase.auth);
+    const profile = useSelector(state => state.firebase.profile)
+    const dialog = useDialog()
+    const firestore = firestoreDB
+
+
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-    const { currentUser, login } = useAuth()
+    const [badge, setBadge] = useState(0)
 
     const toggleDrawer = (isOpen) => (e) => {
         if (e.type === 'keydown' && (e.key === 'Tab' || e.key === 'Shift')) {
@@ -128,12 +137,22 @@ export default function Header({ tab, handleTabChange }) {
         setIsDrawerOpen(isOpen)
     }
 
+    useEffect(() => {
+        if (auth) {
+            const unsubscribe = firestore.collection('carts').doc(auth.uid)
+                .onSnapshot(function (doc) {
+                    setBadge(doc.data().quantity)
+                })
+            return () => unsubscribe()
+        }
+    }, [auth, firestore])
+
+
 
 
     const handleAccount = () => {
-        if (!currentUser) {
-            console.log('lol')
-            login()
+        if (isEmpty(auth)) {
+            dialog.showDialog()
         } else {
             history.push('/contul-meu')
         }
@@ -180,7 +199,7 @@ export default function Header({ tab, handleTabChange }) {
                             onClick={handleAccount}
                         >
                             <Typography variant='body1' className={classes.label}>
-                                {currentUser ? 'Salut, Victor' : 'Conectează-te'}
+                                {!isEmpty(auth) && !isEmpty(profile) ? `Salut, ${capitalize(profile.firstName)}` : 'Conectează-te'}
                             </Typography>
                             <AccountCircle />
                         </Button>
@@ -208,7 +227,7 @@ export default function Header({ tab, handleTabChange }) {
                             <Typography variant='body1' className={classes.label}>
                                 Coș
                             </Typography>
-                            <Badge badgeContent={4} color="secondary">
+                            <Badge badgeContent={badge} color="secondary">
                                 <ShoppingCartIcon />
                             </Badge>
                         </Button>

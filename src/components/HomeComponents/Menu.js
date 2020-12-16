@@ -1,18 +1,11 @@
-import { Box, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper, Slider, Tooltip, Typography } from '@material-ui/core'
-import { ChevronLeft, ChevronRight, ExpandLess, ExpandMore } from '@material-ui/icons'
-import React from 'react'
-import HomeIcon from '@material-ui/icons/Home';
-import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
-import LocalBarIcon from '@material-ui/icons/LocalBar';
-import FilterListIcon from '@material-ui/icons/FilterList';
-import EuroIcon from '@material-ui/icons/Euro';
-import SmokingRoomsIcon from '@material-ui/icons/SmokingRooms';
-import StoreIcon from '@material-ui/icons/Store';
+import { Box, Collapse, List, ListItem, ListItemIcon, Paper, Typography } from '@material-ui/core'
+import { ChevronLeft, ExpandLess, ExpandMore } from '@material-ui/icons'
+import React, { useEffect } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import { useState } from 'react'
-import { capitalize } from '../../utils/utils';
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { useParams, useRouteMatch } from 'react-router-dom';
 import { Link } from "react-router-dom";
+import { firestoreDB } from '../..';
 
 export const useStyles = makeStyles((theme) => ({
     nested: {
@@ -55,43 +48,60 @@ const InfoListItem = withStyles((theme) => ({
     }
 }))(ListItem)
 
-function paramToCategory(param) {
-    switch (param) {
-        case 'alimente': return "Alimente"
-        case 'bauturi': return "Băuturi"
-        case 'tigari': return "Țigări"
-        default: return "Categorie"
-    }
-}
-
-
 export default function CosmoMenu() {
     const classes = useStyles();
 
     const { url, path } = useRouteMatch();
     const { category, subcategory1, subcategory2 } = useParams()
-    console.log(url, path)
-    console.log(category, subcategory1, subcategory2)
 
-    const history = useHistory();
+    const firestore = firestoreDB
 
     const [collapseFilter, setCollapseFilter] = useState(true)
-    const [backButton, setBackButton] = useState(true)
-
-    const items = [
-        'Davidoff',
-        'Dunhill',
-        'Heets',
-        'Kent',
-        'Marlboro',
-        'Neo',
-        'Pall Mall',
-        'Sobranie',
-        'Vogue',
-
-    ]
+    const [items, setItems] = useState([])
+    const [title, setTitle] = useState('')
 
     //fetch categories
+    useEffect(() => {
+
+        const categories = firestore.collection('categories')
+        const subcategories1 = categories.doc(category).collection('categories')
+        const subcategories2 = subcategories1.doc(subcategory1).collection('categories')
+
+        var unsubscribe
+
+        async function getTitle(docRef) {
+            const doc = await docRef.get()
+            setTitle(doc.data().name)
+        }
+
+        if (subcategory1 || subcategory2) {
+            unsubscribe = subcategories2.onSnapshot(function (querySnapshot) {
+                var ids = []
+                querySnapshot.forEach(function (doc) {
+                    ids.push({ id: doc.id, name: doc.data().name, path: `/categorii/${category}/${subcategory1}/${doc.id}` })
+                })
+                setItems(ids)
+            })
+            if (subcategory2) {
+                getTitle(subcategories2.doc(subcategory2))
+            } else {
+                getTitle(subcategories1.doc(subcategory1))
+            }
+        } else {
+            unsubscribe = subcategories1.onSnapshot(function (querySnapshot) {
+                var ids = []
+                querySnapshot.forEach(function (doc) {
+                    ids.push({ id: doc.id, name: doc.data().name, path: `/categorii/${category}/${doc.id}` })
+                })
+                setItems(ids)
+            })
+            getTitle(categories.doc(category))
+        }
+
+        return () => {
+            unsubscribe();
+        }
+    }, [category, firestore, subcategory1, subcategory2])
 
     function BackButton() {
         return (
@@ -117,7 +127,7 @@ export default function CosmoMenu() {
                     <ListItem button onClick={() => setCollapseFilter(!collapseFilter)} className={classes.menuTitle}>
                         <Typography variant='h6' >
                             <Box fontWeight='fontWeightBold'>
-                                {paramToCategory('tigari')}
+                                {title}
                             </Box>
                         </Typography>
                         {collapseFilter ? <ExpandLess /> : <ExpandMore />}
@@ -126,9 +136,9 @@ export default function CosmoMenu() {
                     <Collapse in={collapseFilter} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {items.map((item, index) => {
-                                return <InfoListItem button key={index} component={Link} to={`${url}/${item}`}>
+                                return <InfoListItem button key={index} component={Link} to={item.path}>
                                     <Typography variant='body1' className={classes.listItem}>
-                                        {item}
+                                        {item.name}
                                     </Typography>
                                 </InfoListItem>
                             })}
