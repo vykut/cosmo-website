@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Container, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core'
+import { Button, ButtonGroup, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Save';
@@ -38,8 +38,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function PersonalData() {
     const classes = useStyles()
-    const auth = useSelector(state => state.firebase.auth);
-    const firestore = firestoreDB
     const functions = firebaseFunctions
 
     const [enabled, setEnabled] = useState(false)
@@ -77,8 +75,13 @@ export default function PersonalData() {
     const updateUserData = (e) => {
         e.preventDefault()
         // call firestore db
-        functions.httpsCallable('editPersonalData')({ firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone })
+        try {
+            functions.httpsCallable('editPersonalData')({ firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone })
+        } catch (err) {
+            console.log(err)
+        }
         setEnabled(false)
+
     }
 
     return (

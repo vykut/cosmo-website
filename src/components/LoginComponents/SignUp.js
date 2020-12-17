@@ -7,8 +7,7 @@ import { useState } from 'react';
 import Divider from '@material-ui/core/Divider';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
-import { isLoaded, isEmpty, useFirebase } from "react-redux-firebase";
-import { useSelector } from "react-redux";
+import { useFirebase } from "react-redux-firebase";
 import { capitalize, ComponentTypes } from '../../utils/utils';
 import { useDialog } from '../../contexts/DialogContext';
 

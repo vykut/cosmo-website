@@ -1,13 +1,9 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import ProductBox, { MemoizedProductBox } from '../ProductBox'
 import { makeStyles } from '@material-ui/core/styles'
 import { ChevronRight } from '@material-ui/icons'
 import { Grid, Link, Typography } from '@material-ui/core'
 import { Link as RouterLink } from 'react-router-dom'
-import { firestoreConnect, isEmpty, populate, useFirestoreConnect, isLoaded, useFirestore } from 'react-redux-firebase'
-import { connect, useSelector } from 'react-redux'
-import { compose } from 'redux'
-import { getFirestore } from 'redux-firestore'
 import { firestoreDB } from '../..'
 
 const useStyles = makeStyles((theme) => ({

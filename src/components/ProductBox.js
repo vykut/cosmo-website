@@ -93,15 +93,17 @@ export default function ProductBox({ productID }) {
     const functions = firebaseFunctions
     const cart = useCart()
 
-    const { url, path } = useRouteMatch();
-
     const [quantity, setQuantity] = useState(1)
     const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
     const [isBuyDisabled, setIsBuyDisabled] = useState(false)
 
     const addToFavorite = async () => {
         setIsFavoriteLoading(true)
-        await functions.httpsCallable('favoriteProduct')({ id: productID })
+        try {
+            await functions.httpsCallable('favoriteProduct')({ id: productID })
+        } catch (err) {
+            console.log(err)
+        }
         setIsFavoriteLoading(false)
     }
 

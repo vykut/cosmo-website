@@ -1,4 +1,4 @@
-import { Button, Container, Grid, Link, makeStyles, TextField, useTheme } from '@material-ui/core';
+import { Button, Container, Grid, Link, makeStyles, TextField } from '@material-ui/core';
 import React, { useState } from 'react'
 import { useFirebase } from "react-redux-firebase";
 import { useDialog } from '../../contexts/DialogContext';

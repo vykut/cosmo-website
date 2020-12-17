@@ -94,7 +94,11 @@ export default function ProductPage() {
 
     const addToFavorite = async () => {
         setIsFavoriteDisabled(true)
-        await functions.httpsCallable('favoriteProduct')({ id: productID })
+        try {
+            await functions.httpsCallable('favoriteProduct')({ id: productID })
+        } catch (err) {
+            console.log(err)
+        }
         setIsFavoriteDisabled(false)
     }
 

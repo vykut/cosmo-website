@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Chip, Grid, makeStyles, Paper } from '@material-ui/core';
-import ProductBox, { MemoizedProductBox } from '../ProductBox';
+import { MemoizedProductBox } from '../ProductBox';
 import Pagination from '@material-ui/lab/Pagination';
 import CosmoMenu from './Menu';
 import FilterMenu from './FilterMenu';

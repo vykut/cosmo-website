@@ -183,7 +183,7 @@ exports.placeOrder = functions
 
 exports.getPastOrders = functions
   .region('europe-west1')
-  .https.onCall((data, context) => {
+  .https.onCall(async (data, context) => {
     if (!context.auth) {
       return {
         error: 'Numai utilizatorii autentificati isi pot vedea comenzile anterioare.'
@@ -196,25 +196,32 @@ exports.getPastOrders = functions
     let ordersRef = admin.firestore().collection('orders')
     let ordersQuery = ordersRef.where('userID', '==', context.auth.uid).orderBy('createdAt', 'desc')
     var pastOrders = []
-    return admin.firestore().runTransaction(async transaction => {
-      let orders = await transaction.get(ordersQuery)
+    try {
+      let orders = await ordersQuery.get()
       orders.forEach(async doc => {
-        let productsInOrderQuery = await transaction.get(ordersRef.doc(doc.id).collection('products'))
+        let productsInOrderQuery = await ordersRef.doc(doc.id).collection('products').get()
         const productsInOrder = []
         productsInOrderQuery.forEach(async doc => {
-          let productQuery = await transaction.get(productsRef.doc(doc.id))
+          let productQuery = await productsRef.doc(doc.id).get()
           productsInOrder.push({ id: doc.id, name: productQuery.data().name, price: doc.data().price, quantity: doc.data().quantity })
         })
-        let addressQuery = await transaction.get(addressRef.doc(doc.data().addressID))
+        var addressLabel = ''
+        if (doc.data().addressID) {
+          const addressQuery = await addressRef.doc(doc.data().addressID).get()
+          if (addressQuery.data() && addressQuery.data().label)
+            addressLabel = addressQuery.data().label
+        }
         var riderName = ''
         if (doc.data().riderID) {
-          let riderDoc = await transaction.get(riderQuery.doc(doc.data().riderID))
+          let riderDoc = await riderQuery.doc(doc.data().riderID).get()
           riderName = riderDoc.data().name
         }
-        pastOrders.push({ id: doc.id, products: productsInOrder, address: { label: addressQuery.data().label }, date: doc.data().createdAt, payment: doc.data().payment, rider: { name: riderName }, state: doc.data().state, totalPrice: doc.data().totalPrice })
+        pastOrders.push({ id: doc.id, products: productsInOrder, address: { label: addressLabel }, date: doc.data().createdAt, payment: doc.data().payment, rider: { name: riderName }, state: doc.data().state, totalPrice: doc.data().totalPrice })
       })
       return pastOrders
-    })
+    } catch (err) {
+      console.log(err)
+    }
   })
 
 // http callable function (repeating an order)
@@ -427,40 +434,6 @@ exports.deleteCart = functions
           result: "Cosul a fost sters cu succes."
         }
       })
-  });
-
-//db trigger function when quantity is zero in cart - should be handled in front end as well
-exports.cartQuantityZeroWrite = functions
-  .region('europe-west1')
-  .firestore.document('carts/{cartID}/products/{productID}')
-  .onWrite((change, context) => {
-    if (change.after.exists && change.after.data().quantity <= 0) {
-      return change.after.ref.delete()
-        .then(() => {
-          console.log(`A fost sters produsul ${context.params.productID} din cosul ${context.params.cartID}.`)
-          return {
-            result: `Produsul a fost sters din cos cu succes.`
-          }
-        })
-    }
-    return null
-  });
-
-//db trigger functions when quantity is zero in order - should be handled in front end as well
-exports.orderQuantityZeroWrite = functions
-  .region('europe-west1')
-  .firestore.document('orders/{orderID}/products/{productID}')
-  .onWrite((change, context) => {
-    if (change.after.exists && change.after.data().quantity <= 0) {
-      return change.after.ref.delete()
-        .then(() => {
-          console.log(`A fost sters produsul ${context.params.productID} din comanda ${context.params.orderID}.`)
-          return {
-            result: `Produsul a fost sters din comanda cu succes.`
-          }
-        })
-    }
-    return null
   });
 
 exports.updateCartTotalPriceAndQuantity = functions

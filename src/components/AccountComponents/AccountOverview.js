@@ -1,8 +1,7 @@
-import { Box, Button, ButtonGroup, Container, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core'
+import { Box, Button, ButtonGroup, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Save';
-import UpdateIcon from '@material-ui/icons/Update';
 import PersonalData from './PersonalData'
 import AddressForm from '../AuxiliaryComponents/AddressForm';
 import { Alert } from '@material-ui/lab';
@@ -57,11 +56,19 @@ export default function AccountOverview() {
         console.log(address.data)
         setIsChangingAddress(true)
         if (addressKey === -1) {
-            const response = await functions.httpsCallable('addAddress')({ ...address.data })
-            console.log(response)
+            try {
+                const response = await functions.httpsCallable('addAddress')({ ...address.data })
+                console.log(response)
+            } catch (err) {
+                console.log(err)
+            }
         } else {
-            const response = await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
-            console.log(response)
+            try {
+                const response = await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
+                console.log(response)
+            } catch (err) {
+                console.log(err)
+            }
         }
         setIsChangingAddress(false)
         setAddressKey('')
@@ -74,13 +81,17 @@ export default function AccountOverview() {
     }
 
     const handleDelete = async () => {
-        await functions.httpsCallable('deleteAddress')({ addressID: address.id })
-        setAddressKey('')
-        setAddress({})
-        setAlert({
-            message: 'Adresa a fost ștearsă',
-            severity: 'success'
-        })
+        try {
+            await functions.httpsCallable('deleteAddress')({ addressID: address.id })
+            setAddressKey('')
+            setAddress({})
+            setAlert({
+                message: 'Adresa a fost ștearsă',
+                severity: 'success'
+            })
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     const logout = () => {

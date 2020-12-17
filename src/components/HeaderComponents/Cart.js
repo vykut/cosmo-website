@@ -1,6 +1,6 @@
 import { Button, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
 import React from 'react'
-import ListProduct, { MemoizedListProduct } from './ListProduct';
+import { MemoizedListProduct } from './ListProduct';
 import { useCart } from '../../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({

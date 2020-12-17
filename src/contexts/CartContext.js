@@ -24,7 +24,7 @@ export function CartProvider({ children }) {
 
     const [cart, setCart] = useState(initialCart)
     const [firebaseCart, setFirebaseCart] = useState({})
-    const [productsInFirebaseCart, setProductsInFirebaseCart] = useState({})
+    const [productsInFirebaseCart, setProductsInFirebaseCart] = useState([])
     const [isFirestoreCart, setIsFirestoreCart] = useState(false)
 
     const shouldUploadCartToFirestore = !isEmpty(auth) && cart.products && !isFirestoreCart && !isFirestoreCart
@@ -38,6 +38,9 @@ export function CartProvider({ children }) {
             Promise.all(promises)
                 .then(() => {
                     setCart(initialCart)
+                })
+                .catch(err => {
+                    console.log(err)
                 })
         }
     }, [cart.products, functions, initialCart, shouldUploadCartToFirestore])
@@ -75,7 +78,11 @@ export function CartProvider({ children }) {
                 totalPrice: cart.totalPrice + price * quantity
             })
         } else {
-            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
+            try {
+                await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
+            } catch (err) {
+                console.log(err)
+            }
         }
     }
 
@@ -89,7 +96,11 @@ export function CartProvider({ children }) {
                 return newCart
             })
         } else {
-            await functions.httpsCallable('deleteProductFromCart')({ productID: productID })
+            try {
+                await functions.httpsCallable('deleteProductFromCart')({ productID: productID })
+            } catch (err) {
+                console.log(err)
+            }
         }
     }
 
@@ -124,7 +135,11 @@ export function CartProvider({ children }) {
                 }
             })
         } else {
-            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: 1 })
+            try {
+                await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: 1 })
+            } catch (err) {
+                console.log(err)
+            }
         }
     }
 
@@ -144,7 +159,11 @@ export function CartProvider({ children }) {
                 }
             })
         } else {
-            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: -1 })
+            try {
+                await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: -1 })
+            } catch (err) {
+                console.log(err)
+            }
         }
     }
 

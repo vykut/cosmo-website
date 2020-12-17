@@ -1,4 +1,4 @@
-import { Box, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
+import { Grid, makeStyles, Paper, Typography } from '@material-ui/core'
 import React from 'react'
 import { MemoizedProductsRow } from './ProductsRow';
 import RoomIcon from '@material-ui/icons/Room';

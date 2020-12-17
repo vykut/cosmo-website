@@ -1,5 +1,5 @@
-import { Box, Button, FormControl, Grid, makeStyles, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
-import React, { useEffect, useState } from 'react'
+import { Box, Button, Grid, makeStyles, Paper, TextField, Typography } from '@material-ui/core'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { firebaseFunctions, firestoreDB } from '../..'
 import { useCart } from '../../contexts/CartContext'

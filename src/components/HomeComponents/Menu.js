@@ -51,7 +51,7 @@ const InfoListItem = withStyles((theme) => ({
 export default function CosmoMenu() {
     const classes = useStyles();
     const history = useHistory()
-    const { url, path } = useRouteMatch();
+    const { url } = useRouteMatch();
     const { category, subcategory1, subcategory2 } = useParams()
 
     const firestore = firestoreDB

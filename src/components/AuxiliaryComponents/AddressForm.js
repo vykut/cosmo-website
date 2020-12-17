@@ -1,17 +1,10 @@
-import { FormControl, Grid, makeStyles, MenuItem, Paper, Select, TextField } from '@material-ui/core'
+import { Grid, MenuItem, Select, TextField } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { isEmpty } from 'react-redux-firebase'
 import { firestoreDB } from '../..'
 
-const useStyles = makeStyles((theme) => ({
-    paper: {
-        padding: theme.spacing(),
-    },
-}))
-
 export default function AddressForm({ address, setAddress, addressKey, setAddressKey }) {
-    const classes = useStyles()
     const firestore = firestoreDB
     const auth = useSelector(state => state.firebase.auth);
 

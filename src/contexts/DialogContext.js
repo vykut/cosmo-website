@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle, Grid, IconButton, makeStyles, useTheme } from '@material-ui/core'
-import React, { useContext, useState, useEffect } from 'react'
-import { capitalize, timeout } from '../utils/utils'
+import React, { useContext, useState } from 'react'
+import { timeout } from '../utils/utils'
 import LoginLogic from '../components/LoginComponents/LoginLogic';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import CloseIcon from '@material-ui/icons/Close';

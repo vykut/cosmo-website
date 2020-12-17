@@ -25,14 +25,6 @@ const app = firebase.initializeApp({
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 })
 
-// export const auth = app.auth()
-// export const firestore = app.firestore();
-// auth.languageCode = 'ro'
-// export const functions = app.functions('europe-west1');
-// export default app
-
-// export const editPersonalData = functions.httpsCallable('editPersonalData');
-
 export const firestoreDB = app.firestore()
 export const firebaseFunctions = app.functions('europe-west1')
 
@@ -41,8 +33,7 @@ firebase.firestore()
 const rrfConfig = {
   userProfile: "users",
   useFirestoreForProfile: true,
-  // presence: 'presence', // where list of online users is stored in database
-  // sessions: 'sessions' // where list of user sessions is stored in database (presence must be enabled)
+
 };
 
 const initialState = {};

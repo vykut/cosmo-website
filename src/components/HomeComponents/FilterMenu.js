@@ -1,4 +1,4 @@
-import { Box, Collapse, Grid, List, ListItem, ListItemIcon, makeStyles, OutlinedInput, Paper, Slider, Typography, withStyles } from '@material-ui/core'
+import { Box, Collapse, Grid, List, ListItem, ListItemIcon, makeStyles, Paper, Slider, Typography } from '@material-ui/core'
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import React, { useState } from 'react'
