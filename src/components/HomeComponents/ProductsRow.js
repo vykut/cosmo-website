@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useState } from 'react'
-import ProductBox from '../ProductBox'
+import ProductBox, { MemoizedProductBox } from '../ProductBox'
 import { makeStyles } from '@material-ui/core/styles'
 import { ChevronRight } from '@material-ui/icons'
 import { Grid, Link, Typography } from '@material-ui/core'
@@ -8,6 +8,7 @@ import { firestoreConnect, isEmpty, populate, useFirestoreConnect, isLoaded, use
 import { connect, useSelector } from 'react-redux'
 import { compose } from 'redux'
 import { getFirestore } from 'redux-firestore'
+import { firestoreDB } from '../..'
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -40,41 +41,61 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function ProductsRow({ categoryID }) {
+export default function ProductsRow({ categoryID, recentProducts }) {
     const classes = useStyles()
-    const firestore = useFirestore()
+    const firestore = firestoreDB
 
-    const [productsIDs, setProductsIDs] = useState({})
+    const [products, setProducts] = useState([])
+    const [category, setCategory] = useState({})
 
-    useFirestoreConnect([{
-        collection: 'categories',
-        doc: categoryID,
-        subcollections: [{ collection: 'products' }],
-        storeAs: categoryID
-    }])
+    useEffect(() => {
+        if (categoryID) {
+            const categoryRef = firestore.collection('categories').doc(categoryID)
+            categoryRef.get().then(function (doc) {
+                setCategory({ id: doc.id, data: doc.data() })
+            })
+        }
+    }, [categoryID, firestore])
 
-    useFirestoreConnect({
-        collection: 'categories',
-        doc: categoryID,
-    })
-
-    const fetchedCategory = useSelector(
-        ({ firestore: { data } }) => data.categories && data.categories[categoryID]
-    )
-
-    const fetchedProducts = useSelector(((state) => state.firestore.data[categoryID]))
+    useEffect(() => {
+        if (categoryID) {
+            firestore.collection('products').where('categories', 'array-contains', categoryID).limit(5).get()
+                .then(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach((doc) => {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setProducts(docs)
+                })
+        } else if (recentProducts) {
+            firestore.collection('products').orderBy('createdAt', 'desc').limit(5).get()
+                .then(function (querySnapshot) {
+                    var docs = []
+                    querySnapshot.forEach((doc) => {
+                        docs.push({ id: doc.id, data: doc.data() })
+                    })
+                    setProducts(docs)
+                })
+        }
+    }, [categoryID, firestore, recentProducts])
 
     const categoryURL = () => {
-        var url = '/categorii'
-        if (fetchedCategory.parentCategory) {
-            url += `/${fetchedCategory.parentCategory}`
+        var url = ''
+        if (categoryID && category && category.data) {
+            url = '/categorii'
+            category.data.parentCategories.forEach((categoryID) => {
+                url += `/${categoryID}`
+            })
+            url += `/${category.id}`
         }
-        url += `/${categoryID}`
+        if (recentProducts) {
+            url += '/toate-categoriile'
+        }
         return url
     }
 
     return (<>
-        { isLoaded(fetchedCategory) && !isEmpty(fetchedCategory) && <Grid
+        {!!products.length && <Grid
             container
             direction='column'
             justify='space-between'
@@ -86,10 +107,9 @@ export default function ProductsRow({ categoryID }) {
             >
                 <Grid item >
                     <Typography variant='h5' style={{ marginBottom: 20 }} className={classes.title}>
-                        {fetchedCategory.name}
+                        {categoryID ? category && category.data ? category.data.name : '' : "Produse recente"}
                     </Typography>
                 </Grid>
-                {/* <div style={{ flexGrow: '5' }}></div> */}
                 <Grid item>
                     <Link component={RouterLink} to={categoryURL} underline='none' className={classes.link}>
                         <Typography className={classes.title}>
@@ -103,9 +123,9 @@ export default function ProductsRow({ categoryID }) {
                 direction="row"
                 justify="space-around"
             >
-                {isLoaded(fetchedProducts) && !isEmpty(fetchedProducts) && Object.keys(fetchedProducts).map((productID, index) => {
+                {products.map((product, index) => {
                     return <Grid item key={index}>
-                        <ProductBox productID={productID} />
+                        <MemoizedProductBox productID={product.id} />
                     </Grid>
                 })}
             </Grid>

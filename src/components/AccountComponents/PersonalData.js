@@ -59,7 +59,7 @@ export default function PersonalData() {
     const handleClick = (type) => (e) => {
         switch (type) {
             case 'update':
-                functions.httpsCallable('editPersonalData')({ firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone })
+                updateUserData(e)
                 return setEnabled(true)
             case 'cancel':
                 setUserData({
@@ -77,6 +77,7 @@ export default function PersonalData() {
     const updateUserData = (e) => {
         e.preventDefault()
         // call firestore db
+        functions.httpsCallable('editPersonalData')({ firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone })
         setEnabled(false)
     }
 
@@ -123,7 +124,7 @@ export default function PersonalData() {
                             defaultValue={!isEmpty(profile) && profile.lastName}
                             onChange={handleChange}
                             id="lastName"
-                            label="Prenume"
+                            label="Nume"
                             variant="outlined"
                             fullWidth
                             key='lname'

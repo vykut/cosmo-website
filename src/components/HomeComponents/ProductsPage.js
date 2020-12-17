@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Chip, Grid, makeStyles, Paper } from '@material-ui/core';
 import ProductBox, { MemoizedProductBox } from '../ProductBox';
 import Pagination from '@material-ui/lab/Pagination';
@@ -18,10 +18,11 @@ export const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export default function ProductsPage() {
+export default function ProductsPage({ sortingKey = 0 }) {
 
     const { category, subcategory1, subcategory2 } = useParams();
-    const { url, path } = useRouteMatch();
+
+    const { url } = useRouteMatch();
     const firestore = firestoreDB
 
     const classes = useStyles()
@@ -31,21 +32,39 @@ export default function ProductsPage() {
     const [products, setProducts] = useState([])
 
     const [pages, setPages] = useState(3)
-    const [state, setState] = useState({ sort: 0, numberOfProducts: 24 })
+    const [state, setState] = useState({ sort: sortingKey, numberOfProducts: 24 })
     const [searchQuery, setSearchQuery] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [filter, setFilter] = useState(defaultValue)
 
+    const queryParam = useMemo(() => {
+        if (subcategory2)
+            return subcategory2
+        if (subcategory1)
+            return subcategory1
+        if (category)
+            return category
+        if (url.includes('toate-categoriile'))
+            return 'all'
+    }, [category, subcategory1, subcategory2, url])
 
 
     // set default value on fetch
     //fetch products
     useEffect(() => {
-
         var unsubscribe;
-
-        if (subcategory2) {
-            unsubscribe = firestore.collection('products').where('subcategory2', '==', subcategory2)
+        var productsRef = firestore.collection('products')
+        if (queryParam === 'all') {
+            unsubscribe = productsRef.onSnapshot(querySnapshot => {
+                var docs = []
+                querySnapshot.forEach(function (doc) {
+                    docs.push({ id: doc.id, data: doc.data() })
+                })
+                setProducts(docs)
+            })
+            return () => unsubscribe()
+        } else {
+            unsubscribe = productsRef.where('categories', 'array-contains', queryParam)
                 .onSnapshot(function (querySnapshot) {
                     var docs = []
                     querySnapshot.forEach(function (doc) {
@@ -53,29 +72,12 @@ export default function ProductsPage() {
                     })
                     setProducts(docs)
                 })
-        } else if (subcategory1) {
-            unsubscribe = firestore.collection('products').where('subcategory1', '==', subcategory1)
-                .onSnapshot(function (querySnapshot) {
-                    var docs = []
-                    querySnapshot.forEach(function (doc) {
-                        docs.push({ id: doc.id, data: doc.data() })
-                    })
-                    setProducts(docs)
-                })
-        } else if (category) {
-            unsubscribe = firestore.collection('products').where('category', '==', category)
-                .onSnapshot(function (querySnapshot) {
-                    var docs = []
-                    querySnapshot.forEach(function (doc) {
-                        docs.push({ id: doc.id, data: doc.data() })
-                    })
-                    setProducts(docs)
-                })
+            return () => {
+                console.log('productspage - unsubscribed')
+                unsubscribe()
+            }
         }
-        return () => {
-            unsubscribe()
-        }
-    }, [category, firestore, subcategory1, subcategory2])
+    }, [firestore, queryParam])
 
     const handleChange = (e, value) => {
         setState({
@@ -128,13 +130,6 @@ export default function ProductsPage() {
                 page={currentPage}
                 count={pages}
                 onChange={(e, value) => { setCurrentPage(value) }}
-            // renderItem={(item) => (
-            //     <PaginationItem
-            //         component={Link}
-            //         to={`${ca}${item.page === 1 ? '' : `?pagina=${item.page}`}`}
-            //         {...item}
-            //     />
-            // )}
             />
         )
     }

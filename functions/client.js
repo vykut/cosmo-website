@@ -8,6 +8,7 @@ exports.adminFunctions = require('./admin');
 exports.storageFunctions = require('./storage');
 
 //helper functions
+//admin.firestore.FieldValue.serverTimestamp() - pentru a salva data crearii
 
 // http callable function to edit personal data
 exports.editPersonalData = functions
@@ -55,7 +56,7 @@ exports.editAddress = functions
         label: data.label,
         number: data.number,
         street: data.street
-      })
+      }, { merge: true })
         .then(() => {
           console.log(`S-a modificat adresa ${data.addressID}`)
           return {
@@ -63,7 +64,7 @@ exports.editAddress = functions
           }
         })
     } else {
-      return { error: 'adresa, numarul si eticheta trebuie completate' }
+      return { error: 'strada, numarul si eticheta trebuie completate', data: data }
     }
   })
 
@@ -151,16 +152,18 @@ exports.placeOrder = functions
         let newOrderRef = admin.firestore().collection('orders').doc()
         transaction.set(newOrderRef, {
           addressID: data.addressID,
-          createdAt: admin.firestore.Timestamp.now(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
           payment: data.payment,
           state: 'pending',
+          notes: data.notes,
           userID: context.auth.uid
         })
         let productsInOrderRef = newOrderRef.collection('products')
 
         products.forEach(productData => {
           transaction.set(productsInOrderRef.doc(productData.id), {
-            quantity: productData.get('quantity')
+            quantity: productData.get('quantity'),
+            price: productData.get('price'),
           });
           // delete products from cart
           transaction.delete(productsInCartRef.doc(productData.id))
@@ -171,15 +174,48 @@ exports.placeOrder = functions
           result: `Comanda a fost creata cu succes. Cosul a fost golit.`
         }
       })
-        .then((result) => {
-          return result
-        })
     } else {
       return {
         error: 'Cosul este gol'
       }
     }
   });
+
+exports.getPastOrders = functions
+  .region('europe-west1')
+  .https.onCall((data, context) => {
+    if (!context.auth) {
+      return {
+        error: 'Numai utilizatorii autentificati isi pot vedea comenzile anterioare.'
+      }
+    }
+
+    let riderQuery = admin.firestore().collection('riders')
+    let addressRef = admin.firestore().collection('addresses')
+    let productsRef = admin.firestore().collection('products')
+    let ordersRef = admin.firestore().collection('orders')
+    let ordersQuery = ordersRef.where('userID', '==', context.auth.uid).orderBy('createdAt', 'desc')
+    var pastOrders = []
+    return admin.firestore().runTransaction(async transaction => {
+      let orders = await transaction.get(ordersQuery)
+      orders.forEach(async doc => {
+        let productsInOrderQuery = await transaction.get(ordersRef.doc(doc.id).collection('products'))
+        const productsInOrder = []
+        productsInOrderQuery.forEach(async doc => {
+          let productQuery = await transaction.get(productsRef.doc(doc.id))
+          productsInOrder.push({ id: doc.id, name: productQuery.data().name, price: doc.data().price, quantity: doc.data().quantity })
+        })
+        let addressQuery = await transaction.get(addressRef.doc(doc.data().addressID))
+        var riderName = ''
+        if (doc.data().riderID) {
+          let riderDoc = await transaction.get(riderQuery.doc(doc.data().riderID))
+          riderName = riderDoc.data().name
+        }
+        pastOrders.push({ id: doc.id, products: productsInOrder, address: { label: addressQuery.data().label }, date: doc.data().createdAt, payment: doc.data().payment, rider: { name: riderName }, state: doc.data().state, totalPrice: doc.data().totalPrice })
+      })
+      return pastOrders
+    })
+  })
 
 // http callable function (repeating an order)
 // move products from past order to cart and calculate total
@@ -188,7 +224,7 @@ exports.orderAgain = functions
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       return {
-        error: 'Numai utilizatorii autentificati pot repeta comenzi'
+        error: 'Numai utilizatorii autentificati pot repeta comenzi.'
       }
     }
 
@@ -322,7 +358,7 @@ exports.addProductToCart = functions
   .https.onCall((data, context) => {
     if (!context.auth) {
       return {
-        error: `Numai utilizatorii autentificati pot adauga produse din cos.`
+        error: `Numai utilizatorii autentificati pot adauga produse in cos.`
       }
     }
 
@@ -330,15 +366,14 @@ exports.addProductToCart = functions
     let productInCartRef = cartRef.collection('products').doc(data.productID)
 
 
-    return productInCartRef.set({
-      quantity: admin.firestore.FieldValue.increment(data.quantity)
-    }, { merge: true })
-      .then(() => {
-        console.log(`Produsul ${data.productID} a fost adaugat in cosul userului ${context.auth.uid}.`)
-        return {
-          result: `Produsul a fost adaugat in cos cu succes.`
-        }
-      })
+    return admin.firestore().runTransaction(async transaction => {
+      const docSnapshot = await transaction.get(admin.firestore().collection('products').doc(data.productID))
+      const price = docSnapshot.data().price
+      return productInCartRef.set({
+        quantity: admin.firestore.FieldValue.increment(data.quantity),
+        price: admin.firestore.FieldValue.increment(price * data.quantity)
+      }, { merge: true })
+    })
   })
 
 //http callable function delete product from cart
@@ -369,7 +404,8 @@ exports.createCart = functions
   .firestore.document('users/{userID}')
   .onCreate((snap, context) => {
     return admin.firestore().collection('carts').doc(snap.id).set({
-      totalPrice: 0
+      totalPrice: 0,
+      quantity: 0,
     })
       .then(() => {
         console.log(`A fost creat cosul utilizatorului ${context.params.userID}.`)
@@ -427,90 +463,49 @@ exports.orderQuantityZeroWrite = functions
     return null
   });
 
-// db trigger function for updating the cart total price and individual product total price
-exports.cartProductTotal = functions
+exports.updateCartTotalPriceAndQuantity = functions
   .region('europe-west1')
   .firestore.document('carts/{cartID}/products/{productID}')
   .onWrite(async (change, context) => {
-    let productRef = admin.firestore().collection('products').doc(context.params.productID)
     let cartRef = admin.firestore().collection('carts').doc(context.params.cartID)
+    let productsInCartRef = cartRef.collection('products')
 
-    let cartProduct = change.after.exists ? change.after.data() : null;
-    let oldPrice = change.before.exists ? change.before.data().price : 0
-    let oldQuantity = change.before.exists ? change.before.data().quantity : 0
-    let newQuantity = change.after.exists ? change.after.data().quantity : 0
-
-    if (oldQuantity !== newQuantity) {
-      return admin.firestore().runTransaction(async transaction => {
-        // if product exists calculate product total and overall total
-        if (cartProduct) {
-          let product = await transaction.get(productRef)
-          let price = product.get('price')
-          let newPrice = price * cartProduct.quantity
-          transaction.set(change.after.ref, {
-            price: admin.firestore.FieldValue.increment(newPrice - oldPrice)
-          }, { merge: true })
-          transaction.set(cartRef, {
-            totalPrice: admin.firestore.FieldValue.increment(newPrice - oldPrice),
-            quantity: admin.firestore.FieldValue.increment(newQuantity - oldQuantity)
-          }, { merge: true })
-          // if product has been deleted subtract old price from overall total
-        } else {
-          transaction.update(cartRef, {
-            totalPrice: admin.firestore.FieldValue.increment(-oldPrice),
-            quantity: admin.firestore.FieldValue.increment(-oldQuantity)
-          })
-        }
+    let totalPrice = 0
+    let quantity = 0
+    return admin.firestore().runTransaction(async transaction => {
+      let productsInCartData = await transaction.get(productsInCartRef)
+      productsInCartData.forEach(doc => {
+        totalPrice += doc.data().price
+        quantity += doc.data().quantity
       })
-        .then(() => {
-          console.log(`S-a actualizat totalul pentru cosul utilizatorului ${context.params.orderID}.`)
-          return {
-            result: `Totalul cosului a fost actualizat cu succes.`
-          }
-        })
-    }
+      return transaction.set(cartRef, {
+        totalPrice: totalPrice,
+        quantity: quantity,
+      }, { merge: true })
+    })
   })
 
-// db trigger function for updating the order total price and individual product total price
-exports.orderProductTotal = functions
+exports.updateOrderTotalPriceAndQuantity = functions
   .region('europe-west1')
   .firestore.document('orders/{orderID}/products/{productID}')
   .onWrite(async (change, context) => {
-    let productRef = admin.firestore().collection('products').doc(context.params.productID)
     let orderRef = admin.firestore().collection('orders').doc(context.params.orderID)
+    let productsInOrderRef = orderRef.collection('products')
 
-    let orderProduct = change.after.exists ? change.after.data() : null;
-    let oldPrice = change.before.exists ? change.before.data().price : 0
-    let oldQuantity = change.before.exists ? change.before.data().quantity : -1
-    let newQuantity = change.after.exists ? change.after.data().quantity : -1
-
-    if (oldQuantity !== newQuantity) {
-      return admin.firestore().runTransaction(async transaction => {
-        // if product exists calculate product total and overall total
-        if (orderProduct) {
-          let product = await transaction.get(productRef)
-          let price = product.get('price')
-          let newPrice = price * orderProduct.quantity
-          transaction.set(change.after.ref, {
-            price: admin.firestore.FieldValue.increment(newPrice - oldPrice)
-          }, { merge: true })
-          transaction.set(orderRef, {
-            totalPrice: admin.firestore.FieldValue.increment(newPrice - oldPrice)
-          }, { merge: true })
-          // if product has been deleted subtract old price from overall total
-        } else {
-          transaction.update(orderRef, {
-            totalPrice: admin.firestore.FieldValue.increment(-oldPrice)
-          })
-        }
+    let totalPrice = 0
+    let quantity = 0
+    return admin.firestore().runTransaction(async transaction => {
+      let productsInCartData = await transaction.get(productsInOrderRef)
+      productsInCartData.forEach(doc => {
+        totalPrice += doc.data().price
+        quantity += doc.data().quantity
       })
-        .then(() => {
-          console.log(`S-a actualizat totalul pentru comanda ${context.params.orderID}.`)
-          return {
-            result: `Totalul comenzii a fost actualizat cu succes.`
-          }
-        })
-    }
+      return transaction.set(orderRef, {
+        totalPrice: totalPrice,
+        quantity: quantity,
+      }, { merge: true })
+    })
+
   })
 
 exports.deleteAccount = functions

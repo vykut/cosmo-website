@@ -214,7 +214,7 @@ export default function Header({ tab, handleTabChange }) {
                             <Typography variant='body1' className={classes.label}>
                                 Coș
                             </Typography>
-                            <Badge badgeContent={cart.getCart().quantity} color="secondary">
+                            <Badge badgeContent={cart.getCart() && cart.getCart().quantity ? cart.getCart().quantity : 0} color="secondary">
                                 <ShoppingCartIcon />
                             </Badge>
                         </Button>

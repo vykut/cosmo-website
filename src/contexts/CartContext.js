@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux";
 import { isEmpty } from "react-redux-firebase";
 import { firebaseFunctions, firestoreDB } from "..";
-import firebase from 'firebase';
 
 const CartContext = createContext()
 
@@ -26,9 +25,12 @@ export function CartProvider({ children }) {
     const [cart, setCart] = useState(initialCart)
     const [firebaseCart, setFirebaseCart] = useState({})
     const [productsInFirebaseCart, setProductsInFirebaseCart] = useState({})
+    const [isFirestoreCart, setIsFirestoreCart] = useState(false)
 
+    const shouldUploadCartToFirestore = !isEmpty(auth) && cart.products && !isFirestoreCart && !isFirestoreCart
     useEffect(() => {
-        if (!isEmpty(auth) && cart.products) {
+        if (shouldUploadCartToFirestore) {
+            setIsFirestoreCart(true)
             var promises = []
             Object.keys(cart.products).forEach((product) => {
                 promises.push(functions.httpsCallable('addProductToCart')({ productID: product, quantity: cart.products[product].quantity }))
@@ -38,7 +40,7 @@ export function CartProvider({ children }) {
                     setCart(initialCart)
                 })
         }
-    }, [auth, cart, functions, initialCart])
+    }, [cart.products, functions, initialCart, shouldUploadCartToFirestore])
 
     useEffect(() => {
         var cartUnsubscribe
@@ -58,7 +60,7 @@ export function CartProvider({ children }) {
         }
     }, [auth, firestore,])
 
-    const addProductToCart = (productID, price, quantity) => {
+    const addProductToCart = async (productID, price, quantity) => {
         if (isEmpty(auth)) {
             setCart({
                 ...cart,
@@ -73,25 +75,21 @@ export function CartProvider({ children }) {
                 totalPrice: cart.totalPrice + price * quantity
             })
         } else {
-            functions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
+            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: quantity })
         }
     }
 
-    const deleteProductFromCart = (productID) => {
+    const deleteProductFromCart = async (productID) => {
         if (isEmpty(auth)) {
-            const productsInCart = [...cart.products]
-            const index = productsInCart.indexOf(productID);
-            if (index > -1) {
-                productsInCart.splice(index, 1)
-            }
-            setCart({
-                ...cart,
-                quantity: cart.quantity - cart.products[productID].quantity,
-                totalPrice: cart.totalPrice - cart.products[productID].price,
-                products: productsInCart,
+            setCart((prevCart) => {
+                const newCart = { ...prevCart }
+                newCart.quantity = prevCart.quantity - prevCart.products[productID].quantity
+                newCart.totalPrice = prevCart.totalPrice - prevCart.products[productID].price
+                delete newCart.products[productID]
+                return newCart
             })
         } else {
-            functions.httpsCallable('deleteProductFromCart')({ productID: productID })
+            await functions.httpsCallable('deleteProductFromCart')({ productID: productID })
         }
     }
 
@@ -111,39 +109,42 @@ export function CartProvider({ children }) {
         }
     }
 
-    const incrementQuantity = (productID) => {
+    const incrementQuantity = async (productID) => {
         if (isEmpty(auth)) {
             setCart({
                 ...cart,
+                quantity: cart.quantity + 1,
+                totalPrice: cart.totalPrice + cart.products[productID].price / cart.products[productID].quantity,
                 products: {
                     ...cart.products,
                     [productID]: {
-                        ...cart.products[productID],
+                        price: cart.products[productID].price + cart.products[productID].price / cart.products[productID].quantity,
                         quantity: cart.products[productID].quantity + 1
                     }
                 }
             })
         } else {
-            firestore.collection('carts').doc(auth.uid).collection('products').doc(productID)
-                .update({ quantity: firebase.firestore.FieldValue.increment(1) })
+            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: 1 })
         }
     }
 
-    const decrementQuantity = (productID) => {
+    const decrementQuantity = async (productID) => {
         if (isEmpty(auth)) {
             setCart({
                 ...cart,
+                quantity: cart.quantity - 1,
+                totalPrice: cart.totalPrice - cart.products[productID].price / cart.products[productID].quantity,
                 products: {
                     ...cart.products,
                     [productID]: {
                         ...cart.products[productID],
+                        price: cart.products[productID].price - cart.products[productID].price / cart.products[productID].quantity,
                         quantity: cart.products[productID].quantity - 1
                     }
                 }
             })
         } else {
-            firestore.collection('carts').doc(auth.uid).collection('products').doc(productID)
-                .update({ quantity: firebase.firestore.FieldValue.increment(-1) })
+            await functions.httpsCallable('addProductToCart')({ productID: productID, quantity: -1 })
         }
     }
 

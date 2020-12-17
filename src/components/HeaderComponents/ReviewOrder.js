@@ -2,6 +2,7 @@ import { Box, Button, FormControl, Grid, makeStyles, MenuItem, Paper, Select, Te
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { firebaseFunctions, firestoreDB } from '../..'
+import { useCart } from '../../contexts/CartContext'
 import AddressForm from '../AuxiliaryComponents/AddressForm'
 import PaymentTypeForm from '../AuxiliaryComponents/PaymentTypeForm'
 
@@ -21,6 +22,8 @@ export default function ReviewOrder({ placeOrder }) {
     const firestore = firestoreDB
     const functions = firebaseFunctions
     const auth = useSelector(state => state.firebase.auth);
+    const cart = useCart()
+    const deliveryPrice = 10
 
     // save address if it's a new one
     const [address, setAddress] = useState({})
@@ -112,7 +115,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography>
-                                            220 RON
+                                            {Math.round((cart.getCart().totalPrice + Number.EPSILON) * 100) / 100} RON
                                 </Typography>
                                     </Grid>
                                 </Grid>
@@ -124,7 +127,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography>
-                                            10 RON
+                                            {deliveryPrice} RON
                                 </Typography>
                                     </Grid>
                                 </Grid>
@@ -136,8 +139,8 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant='h6'>
-                                            230 RON
-                                </Typography>
+                                            {Math.round((cart.getCart().totalPrice + deliveryPrice + Number.EPSILON) * 100) / 100} RON
+                                        </Typography>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -146,7 +149,7 @@ export default function ReviewOrder({ placeOrder }) {
                     <Grid item>
                         <Button fullWidth color='primary' variant='contained' size='large' type="submit" disabled={loading}>
                             Plasează comanda
-                            </Button>
+                        </Button>
                     </Grid>
                 </Grid>
             </form>

@@ -3,13 +3,13 @@ import React, { useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import ProductsRow from '../HomeComponents/ProductsRow';
 import { useParams } from 'react-router-dom';
 import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
 import { useSelector } from 'react-redux';
 import { useCart } from '../../contexts/CartContext'
+import { firebaseFunctions } from '../..';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -86,24 +86,16 @@ export default function ProductPage() {
     const classes = useStyles()
     const { productID } = useParams()
     const cart = useCart()
+    const functions = firebaseFunctions
 
     const [state, setState] = useState({ quantity: 1 })
-    const [isFavorite, setIsFavorite] = useState(false)
+    const [isFavoriteDisabled, setIsFavoriteDisabled] = useState(false)
+    const [isBuyDisabled, setIsBuyDisabled] = useState(false)
 
-    const addToFavorite = () => {
-
-        // to add firebase logic
-
-        //then ->
-        setIsFavorite(!isFavorite)
-
-    }
-
-    const handleChange = (e, value) => {
-        setState({
-            ...state,
-            [e.target.name]: value
-        })
+    const addToFavorite = async () => {
+        setIsFavoriteDisabled(true)
+        await functions.httpsCallable('favoriteProduct')({ id: productID })
+        setIsFavoriteDisabled(false)
     }
 
     const adjustQuantity = (increment) => {
@@ -130,11 +122,23 @@ export default function ProductPage() {
 
     const product = useSelector((state) => state.firestore.data.products && state.firestore.data.products[productID])
 
-    const addToCart = () => {
+    const addToCart = async () => {
         // to add firebase logic
-        // show snackbar with succes
-        if (productID && state.quantity && product && product.price)
-            cart.addProductToCart(productID, product.price, state.quantity,)
+        if (productID && state.quantity && !isEmpty(product)) {
+            setIsBuyDisabled(true)
+            try {
+                await cart.addProductToCart(productID, product.price, state.quantity)
+                setState({
+                    ...state,
+                    quantity: 1,
+                })
+            } catch (err) {
+
+            }
+            setIsBuyDisabled(false)
+        }
+
+        // show snackbar with succes or error
     }
 
     return (
@@ -205,6 +209,7 @@ export default function ProductPage() {
                                                 size='large'
                                                 startIcon={<ShoppingCartIcon />}
                                                 onClick={addToCart}
+                                                disabled={isBuyDisabled}
                                             >
                                                 Adaugă în coș
                                         </Button>
@@ -215,6 +220,7 @@ export default function ProductPage() {
                                                 variant='contained'
                                                 size='small'
                                                 onClick={addToFavorite}
+                                                disabled={isFavoriteDisabled}
                                             >
                                                 <FavoriteIcon />
                                             </Button>
@@ -247,7 +253,7 @@ export default function ProductPage() {
                             </Grid>
                         </Grid>
                         <Grid item>
-                            <ProductsRow category='Produse similare' categoryID={'dOWcOfCSyXGPAwcRJIjD'} />
+                            <ProductsRow recentProducts />
                             {/* produse similare */}
                         </Grid>
                     </Grid>

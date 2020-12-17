@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect, Link as RouterLink, useParams } from 'react-router-dom';
+import { Switch, Route, Redirect, Link as RouterLink, useParams, useRouteMatch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import '../css/styles.css';
 import Header from './HeaderComponents/Header';
@@ -8,7 +8,6 @@ import { Breadcrumbs, Typography, Link } from '@material-ui/core';
 import StoreIcon from '@material-ui/icons/Store';
 import ProductPage from './ProductComponents/ProductPage';
 import AccountOverview from './AccountComponents/AccountOverview';
-import { capitalize } from '../utils/utils';
 import { DialogProvider } from '../contexts/DialogContext';
 import { useSelector } from 'react-redux'
 import { isLoaded, isEmpty, useFirestoreConnect } from 'react-redux-firebase'
@@ -56,6 +55,7 @@ function App() {
 
   function CosmoBreadcrumbs() {
     const classes = useStyles()
+    const { url } = useRouteMatch()
     const { category, subcategory1, subcategory2, productID } = useParams()
 
     useFirestoreConnect([{
@@ -67,12 +67,14 @@ function App() {
     const categories = useSelector((state) => state.firestore.data.categories)
     const products = useSelector((state) => state.firestore.data.products)
 
-    const homeCrumb = !category && <Typography className={classes.infoTextColor}>
+    const homeCrumb = url.includes('acasa') && <Typography className={classes.infoTextColor}>
       Acasă
         </Typography>
-    const categoryTitleCrumb = category && <Typography className={classes.infoTextColor}>
-      Categorii
-        </Typography>
+    const categoryTitleCrumb = (category || url.includes('toate-categoriile')) && <Link component={RouterLink} to={`/toate-categoriile`} underline='always'>
+      <Typography className={classes.infoTextColor}>
+        Categorii
+      </Typography>
+    </Link>
     const categoryCrumb = category && categories && categories[category] && <Link component={RouterLink} to={`/categorii/${category}`} underline='always'>
       <Typography className={classes.infoTextColor}>
         {categories[category].name}
@@ -126,6 +128,10 @@ function App() {
             <ProductPage />
           </Route>
           <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?'>
+            <CosmoBreadcrumbs />
+            <ProductsPage />
+          </Route>
+          <Route exact path='/toate-categoriile'>
             <CosmoBreadcrumbs />
             <ProductsPage />
           </Route>

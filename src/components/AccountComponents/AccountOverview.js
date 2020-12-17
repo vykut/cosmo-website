@@ -50,15 +50,20 @@ export default function AccountOverview() {
         message: '',
         severity: 'error'
     })
+    const [isChangingAddress, setIsChangingAddress] = useState(false)
 
     const handleAddress = async (e) => {
         e.preventDefault()
         console.log(address.data)
+        setIsChangingAddress(true)
         if (addressKey === -1) {
-            await functions.httpsCallable('addAddress')({ ...address.data })
+            const response = await functions.httpsCallable('addAddress')({ ...address.data })
+            console.log(response)
         } else {
-            await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
+            const response = await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
+            console.log(response)
         }
+        setIsChangingAddress(false)
         setAddressKey('')
         setAddress({})
         setAlert({
@@ -132,7 +137,7 @@ export default function AccountOverview() {
                                                             Șterge adresa
                                                         </Button>
                                                     }
-                                                    <Button color='primary' type='submit' startIcon={<SaveIcon />} variant='contained'>
+                                                    <Button color='primary' type='submit' startIcon={<SaveIcon />} variant='contained' disabled={isChangingAddress}>
                                                         Salvează adresa
                                                     </Button>
                                                 </ButtonGroup>

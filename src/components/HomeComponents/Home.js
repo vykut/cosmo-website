@@ -1,11 +1,10 @@
-import { Breadcrumbs, Grid, Link, makeStyles, Typography } from '@material-ui/core'
-import React, { useEffect, useState, useCallback } from 'react'
-import CosmoMenu from './Menu';
-import ProductsPage from './ProductsPage';
-import { firebaseConnect, firestoreReducer, isEmpty, isLoaded, populate, useFirestoreConnect } from 'react-redux-firebase';
-import { connect, useSelector } from 'react-redux';
-import { compose } from 'redux';
-import ProductsRow from './ProductsRow';
+import { Box, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
+import React from 'react'
+import { MemoizedProductsRow } from './ProductsRow';
+import RoomIcon from '@material-ui/icons/Room';
+import PhoneInTalkIcon from '@material-ui/icons/PhoneInTalk';
+import StoreIcon from '@material-ui/icons/Store';
+import ScheduleIcon from '@material-ui/icons/Schedule';
 
 const useStyles = makeStyles((theme) => ({
     breadcrumbs: {
@@ -23,36 +22,112 @@ const useStyles = makeStyles((theme) => ({
     mainContainer: {
         padding: theme.spacing(2)
     },
+    paper: {
+        padding: theme.spacing(),
+        // margin: theme.spacing(),
+        color: theme.palette.secondary.main,
+        backgroundColor: theme.palette.primary.main,
+        height: '100%'
+    },
+    whiteTextColor: {
+        color: theme.palette.primary.contrastText
+    },
 }))
 
 export default function Home() {
     const classes = useStyles()
 
-    useFirestoreConnect([{
-        collection: 'categories',
-        doc: '0klQV3KLSaG9uCWZofCL',
-        subcollections: [{ collection: 'categories' }],
-        storeAs: '0klQV3KLSaG9uCWZofCL-products'
-    }])
-
-    const products = useSelector((state) => state.firestore.data)
-    console.log(products, 'home')
+    function StoreInfo() {
+        return (
+            <Grid container justify='center'>
+                <Grid item xs={6} sm={3} style={{ padding: 4 }}>
+                    <Paper className={classes.paper}>
+                        <Grid container direction='column' justify='center' alignItems='center' alignContent='center' style={{ height: '100%' }}>
+                            <Grid item>
+                                <RoomIcon fontSize='large' />
+                            </Grid>
+                            <Grid item>
+                                <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Livrăm până la ușa ta
+                                    </Typography>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+                <Grid item xs={6} sm={3} style={{ padding: 4 }}>
+                    <Paper className={classes.paper}>
+                        <Grid container direction='column' justify='center' alignItems='center' alignContent='center' style={{ height: '100%' }}>
+                            <Grid item>
+                                <PhoneInTalkIcon fontSize='large' />
+                            </Grid>
+                            <Grid item>
+                                <Typography component='div' variant='body1' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Ne poți contacta la
+                                    </Typography>
+                                <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    0722123456
+                                    </Typography>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+                <Grid item xs={6} sm={3} style={{ padding: 4 }}>
+                    <Paper className={classes.paper}>
+                        <Grid container direction='column' justify='center' alignItems='center' alignContent='center' style={{ height: '100%' }}>
+                            <Grid item>
+                                <StoreIcon fontSize='large' />
+                            </Grid>
+                            <Grid item>
+                                <Typography component='div' variant='body1' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Adresa magazinului
+                                    </Typography>
+                                <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Soseaua de centura nr. 200
+                                    </Typography>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+                <Grid item xs={6} sm={3} style={{ padding: 4 }}>
+                    <Paper className={classes.paper}>
+                        <Grid container direction='column' justify='center' alignItems='center' alignContent='center' style={{ height: '100%' }}>
+                            <Grid item>
+                                <ScheduleIcon fontSize='large' />
+                            </Grid>
+                            <Grid item>
+                                <Typography component='div' variant='body1' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Orar
+                                    </Typography>
+                                <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Lu - Vi: 9 - 22
+                                    </Typography>
+                                <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
+                                    Sa - Du: 10 - 20
+                                    </Typography>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+            </Grid>
+        )
+    }
 
     return (
         <div className={classes.mainContainer}>
             <Grid
                 container
-                item
                 direction='column'
                 justify="center"
-                md
                 spacing={4}
             >
                 <Grid item>
-                    <ProductsRow categoryID='dOWcOfCSyXGPAwcRJIjD' />
+                    <StoreInfo />
                 </Grid>
                 <Grid item>
-                    <ProductsRow categoryID='Dtde6UJzR1aVIWiP3EX6' />
+                    <MemoizedProductsRow recentProducts={true} />
+                </Grid>
+                <Grid item>
+                    <MemoizedProductsRow categoryID='emgqRnkMcrfiM24JI3i6' />
                 </Grid>
                 {/* <ProductsPage category='{'yolo'}' /> */}
             </Grid >

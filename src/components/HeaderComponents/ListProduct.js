@@ -1,5 +1,5 @@
-import { Box, Button, Drawer, Grid, IconButton, makeStyles, Link, Paper, Typography, withStyles } from '@material-ui/core'
-import React, { useCallback, useEffect, useState } from 'react'
+import { Box, Button, Grid, IconButton, makeStyles, Link, Paper, Typography } from '@material-ui/core'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
@@ -79,125 +79,139 @@ export default function ListProduct({ product }) {
     const classes = useStyles()
     const cart = useCart()
     const firestore = firestoreDB
-
-    const [state, setState] = useState(product.data.quantity)
     const [fetchedProduct, setFetchedProduct] = useState({})
+    const [isDeleteDisabled, setIsDeleteDisabled] = useState(false)
+    const [isIncrementDisabled, setIsIncrementDisabled] = useState(false)
 
     useEffect(() => {
         const unsubscribe = firestore.collection('products').doc(product.id)
-            .onSnapshot(function (doc) {
-                setFetchedProduct(doc.data())
+            .onSnapshot(doc => {
+                setFetchedProduct({ id: doc.id, data: doc.data() })
             })
         return () => unsubscribe()
-    }, [firestore, product.id])
-
+    })
 
     const productURL = useCallback(() => {
         var url = '/categorii'
-        if (fetchedProduct.category) {
-            url += `/${fetchedProduct.category}`
+        if (fetchedProduct.data) {
+            fetchedProduct.data.categories.forEach((category) => {
+                url += `/${category}`
+            })
+            url += `/p/${product.id}`
         }
-        if (fetchedProduct.subcategory1) {
-            url += `/${fetchedProduct.subcategory1}`
-        }
-        if (fetchedProduct.subcategory2) {
-            url += `/${fetchedProduct.subcategory2}`
-        }
-        url += `/p/${product.id}`
         return url
-    }, [product.id, fetchedProduct])
+    }, [fetchedProduct, product.id])
 
-    const adjustQuantity = (increment) => {
+    const adjustQuantity = async (increment) => {
+        if (!increment && product.data.quantity === 1) {
+            setIsDeleteDisabled(true)
+            await removeProductFromCart()
+            setIsDeleteDisabled(false)
+            return
+        }
         if (increment && product.data.quantity < 20) {
-
-            return cart.incrementQuantity(product.id)
+            setIsIncrementDisabled(true)
+            await cart.incrementQuantity(product.id)
+            setIsIncrementDisabled(false)
+            return
         }
         if (!increment && product.data.quantity > 1) {
-            return cart.decrementQuantity(product.id)
-        }
-        if (!increment && product.data.quantity === 1) {
-            removeProductFromCart()
+            setIsIncrementDisabled(true)
+            await cart.decrementQuantity(product.id)
+            setIsIncrementDisabled(false)
+            return
         }
     }
 
-    const removeProductFromCart = () => {
+    const removeProductFromCart = async () => {
         // remove item from cart
-        cart.deleteProductFromCart(product.id)
+        setIsDeleteDisabled(true)
+        await cart.deleteProductFromCart(product.id)
+        setIsDeleteDisabled(false)
     }
 
     return (
-        <Paper className={classes.paper}>
-            <Grid container direction='column' spacing={2}>
-                <Grid item>
-                    <Link component={RouterLink} to={productURL} underline='none'>
-                        <Grid container>
-                            <Grid item xs={3} >
-                                <img src={fetchedProduct.image} alt={fetchedProduct.name} className={classes.image} />
-                            </Grid>
-                            <Grid container item direction='column' xs={9} justify='space-around' alignItems='center'>
-                                <Grid item >
-                                    <Typography >
-                                        {fetchedProduct.name}
-                                    </Typography>
-                                </Grid>
-                                <Grid container item justify='space-around'>
-                                    <Grid item>
-                                        <Typography color='textPrimary'>
-                                            Preț {Math.round((fetchedProduct.price + Number.EPSILON) * 100) / 100} RON
+        <>
+            {
+                fetchedProduct.data && <Paper className={classes.paper}>
+                    <Grid container direction='column' spacing={2}>
+                        <Grid item>
+                            <Link component={RouterLink} to={productURL} underline='none'>
+                                <Grid container>
+                                    <Grid item xs={3} >
+                                        <img src={fetchedProduct.data.image} alt={fetchedProduct.data.name} className={classes.image} />
+                                    </Grid>
+                                    <Grid container item direction='column' xs={9} justify='space-around' alignItems='center'>
+                                        <Grid item >
+                                            <Typography >
+                                                {fetchedProduct.data.name}
                                             </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography component='div' color='textPrimary'>
-                                            <Box fontWeight='fontWeightBold'>
-                                                Subtotal {Math.round((product.data.quantity * fetchedProduct.price + Number.EPSILON) * 100) / 100} RON
+                                        </Grid>
+                                        <Grid container item justify='space-around'>
+                                            <Grid item>
+                                                <Typography color='textPrimary'>
+                                                    Preț {Math.round((fetchedProduct.data.price + Number.EPSILON) * 100) / 100} RON
+                                            </Typography>
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography component='div' color='textPrimary'>
+                                                    <Box fontWeight='fontWeightBold'>
+                                                        Subtotal {Math.round((product.data.price + Number.EPSILON) * 100) / 100} RON
                                         </Box>
-                                        </Typography>
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
+                            </Link>
+                        </Grid>
+                        <Grid container item justify='space-between'>
+                            <Grid item>
+                                {/* quantity selector */}
+                                <div className={classes.quantitySelector}>
+                                    <IconButton
+                                        className={classes.quantityDecrement}
+                                        onClick={() => { adjustQuantity(false) }}
+                                        id='decrement'
+                                        disabled={isDeleteDisabled || isIncrementDisabled}
+                                    >
+                                        <RemoveIcon />
+                                    </IconButton>
+                                    <Typography
+                                        className={classes.quantityInput}
+                                        align='center'
+                                        variant='body1'
+                                        component='div'
+                                    >
+                                        <Box fontWeight='fontWeightBold'>
+                                            {product.data.quantity}
+                                        </Box>
+                                    </Typography>
+                                    <IconButton
+                                        className={classes.quantityIncrement}
+                                        onClick={() => { adjustQuantity(true) }}
+                                        id='increment'
+                                        disabled={isIncrementDisabled}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </div>
+                            </Grid>
+                            <Grid item>
+                                <Button
+                                    className={classes.removeButton}
+                                    onClick={removeProductFromCart}
+                                    disabled={isDeleteDisabled}
+                                >
+                                    <DeleteForeverIcon />
+                                </Button>
                             </Grid>
                         </Grid>
-                    </Link>
-                </Grid>
-                <Grid container item justify='space-between'>
-                    <Grid item>
-                        {/* quantity selector */}
-                        <div className={classes.quantitySelector}>
-                            <IconButton
-                                className={classes.quantityDecrement}
-                                onClick={() => { adjustQuantity(false) }}
-                                id='decrement'
-                            >
-                                <RemoveIcon />
-                            </IconButton>
-                            <Typography
-                                className={classes.quantityInput}
-                                align='center'
-                                variant='body1'
-                                component='div'
-                            >
-                                <Box fontWeight='fontWeightBold'>
-                                    {product.data.quantity}
-                                </Box>
-                            </Typography>
-                            <IconButton
-                                className={classes.quantityIncrement}
-                                onClick={() => { adjustQuantity(true) }}
-                                id='increment'
-                            >
-                                <AddIcon />
-                            </IconButton>
-                        </div>
                     </Grid>
-                    <Grid item>
-                        <Button
-                            className={classes.removeButton}
-                            onClick={removeProductFromCart}
-                        >
-                            <DeleteForeverIcon />
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Grid>
-        </Paper>
+                </Paper>
+            }
+        </>
     )
 }
+
+export const MemoizedListProduct = memo(ListProduct)

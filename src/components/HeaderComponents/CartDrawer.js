@@ -1,15 +1,13 @@
-import { Box, Button, Drawer, Grid, IconButton, makeStyles, Paper, Typography, withStyles } from '@material-ui/core'
-import React, { useEffect, useReducer, useState } from 'react'
-import RemoveIcon from '@material-ui/icons/Remove';
-import AddIcon from '@material-ui/icons/Add';
-import ListProduct from './ListProduct';
+import { Box, Drawer, Grid, IconButton, makeStyles, Typography } from '@material-ui/core'
+import React, { useReducer } from 'react'
 import CloseIcon from '@material-ui/icons/Close';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Cart from './Cart';
 import ReviewOrder from './ReviewOrder';
-import { isLoaded, isEmpty } from "react-redux-firebase";
+import { isEmpty } from "react-redux-firebase";
 import { useSelector } from "react-redux";
 import { useDialog } from '../../contexts/DialogContext';
+import OrderDetails from './OrderDetails';
 
 const useStyles = makeStyles((theme) => ({
     drawer: {
@@ -102,7 +100,6 @@ export default function CartDrawer(props) {
                 dialog.showDialog()
                 return currentState
             } else {
-                console.log(auth)
                 return changes
             }
         }
@@ -146,7 +143,7 @@ export default function CartDrawer(props) {
                 <TitleGrid />
                 {showCart && <Cart reviewOrder={reviewOrder} />}
                 {showReview && <ReviewOrder placeOrder={placeOrder} />}
-                {/* {showOrder && <OrderDetails />} */}
+                {showOrder && <OrderDetails />}
             </Grid>
         </Drawer>
     )

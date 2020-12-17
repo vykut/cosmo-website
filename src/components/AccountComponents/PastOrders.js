@@ -1,5 +1,8 @@
 import { Grid, makeStyles, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Typography } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { isEmpty } from 'react-redux-firebase'
+import { firebaseFunctions, firestoreDB } from '../..'
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -10,62 +13,79 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-var pastOrders = [{
-    products: [{
-        name: 'Bere blondă sticlă 0.33 l Heineken',
-        price: 15,
-        quantity: 3,
-    },
-    {
-        name: 'Bere blondă sticlă 0.33 l Heineken',
-        price: 15,
-        quantity: 3,
-    }
-    ],
-    address: {
-        tag: 'Acasă',
-    },
-    date: new Date(2020, 10, 30),
-    payment: 'card',
-    rider: {
-        name: 'ion'
-    },
-    state: 'livrată',
-    totalPrice: 30,
-},
-{
-    products: [{
-        name: 'Bere blondă sticlă 0.33 l Heineken',
-        price: 150,
-        quantity: 30,
-    },
-    {
-        name: 'Bere blondă sticlă 0.33 l Heineken',
-        price: 150,
-        quantity: 30,
-    }
-    ],
-    address: {
-        tag: 'Serviciu',
-    },
-    date: new Date(2020, 11, 30),
-    payment: 'cash',
-    rider: {
-        name: 'ionel'
-    },
-    state: 'anulată',
-    totalPrice: 300,
-}
-].sort((a, b) => { return b.date - a.date })
+// var pastOrders = [{
+//     products: [{
+//         name: 'Bere blondă sticlă 0.33 l Heineken',
+//         price: 15,
+//         quantity: 3,
+//     },
+//     {
+//         name: 'Bere blondă sticlă 0.33 l Heineken',
+//         price: 15,
+//         quantity: 3,
+//     }
+//     ],
+//     address: {
+//         tag: 'Acasă',
+//     },
+//     date: new Date(2020, 10, 30),
+//     payment: 'card',
+//     rider: {
+//         name: 'ion'
+//     },
+//     state: 'livrată',
+//     totalPrice: 30,
+// },
+// {
+//     products: [{
+//         name: 'Bere blondă sticlă 0.33 l Heineken',
+//         price: 150,
+//         quantity: 30,
+//     },
+//     {
+//         name: 'Bere blondă sticlă 0.33 l Heineken',
+//         price: 150,
+//         quantity: 30,
+//     }
+//     ],
+//     address: {
+//         tag: 'Serviciu',
+//     },
+//     date: new Date(2020, 11, 30),
+//     payment: 'cash',
+//     rider: {
+//         name: 'ionel'
+//     },
+//     state: 'anulată',
+//     totalPrice: 300,
+// }
+// ].sort((a, b) => { return b.date - a.date })
 
 
 export default function PastOrders() {
     const classes = useStyles()
+    const firestore = firestoreDB
+    const functions = firebaseFunctions
+    const auth = useSelector(state => state.firebase.auth);
 
     const [orderKey, setOrderKey] = useState(0)
-    const [order, setOrder] = useState(pastOrders[0])
+    const [order, setOrder] = useState({})
+    const [pastOrders, setPastOrders] = useState([])
 
     // fetch orders
+    useEffect(() => {
+        async function fetchPastOrders() {
+            try {
+                const pastOrders = await functions.httpsCallable('getPastOrders')({ request: 'pls no cors ty' })
+                console.log(pastOrders)
+                setPastOrders(pastOrders)
+                setOrderKey(0)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        fetchPastOrders()
+    }, [functions])
 
     const handleSelectChange = (e) => {
         setOrderKey(e.target.value)
@@ -90,11 +110,11 @@ export default function PastOrders() {
                         fullWidth
                     >
                         {pastOrders.map((order, index) => <MenuItem value={index} key={index}>
-                            {order.date.toLocaleDateString('ro-RO')}
+                            {order.createdAt.toLocaleDateString('ro-RO')}
                         </MenuItem>)}
                     </Select>
                 </Grid>
-                <Grid container item direction='column' spacing={1}>
+                {!!pastOrders.length && <Grid container item direction='column' spacing={1}>
                     <Grid container item justify='space-between'>
                         <Grid item>
                             <Typography>
@@ -111,7 +131,7 @@ export default function PastOrders() {
                     <Grid container item justify='space-between'>
                         <Grid item>
                             <Typography>
-                                Adresă: {order.address.tag}
+                                Adresă: {order.address.label}
                             </Typography>
                         </Grid>
                         <Grid item>
@@ -160,7 +180,7 @@ export default function PastOrders() {
                         </TableContainer>
 
                     </Grid>
-                </Grid>
+                </Grid>}
             </Grid>
         </Paper>
     )

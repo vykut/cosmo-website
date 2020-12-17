@@ -1,9 +1,9 @@
 import { Box, Collapse, List, ListItem, ListItemIcon, Paper, Typography } from '@material-ui/core'
 import { ChevronLeft, ExpandLess, ExpandMore } from '@material-ui/icons'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import { useState } from 'react'
-import { useParams, useRouteMatch } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import { firestoreDB } from '../..';
 
@@ -50,7 +50,7 @@ const InfoListItem = withStyles((theme) => ({
 
 export default function CosmoMenu() {
     const classes = useStyles();
-
+    const history = useHistory()
     const { url, path } = useRouteMatch();
     const { category, subcategory1, subcategory2 } = useParams()
 
@@ -60,59 +60,63 @@ export default function CosmoMenu() {
     const [items, setItems] = useState([])
     const [title, setTitle] = useState('')
 
+    const queryParam = useMemo(() => {
+        if (subcategory2)
+            return subcategory2
+        if (subcategory1)
+            return subcategory1
+        if (category)
+            return category
+        if (url.includes('toate-categoriile'))
+            return 'all'
+        return ''
+    }, [category, subcategory1, subcategory2, url])
+
     //fetch categories
     useEffect(() => {
-
-        const categories = firestore.collection('categories')
-        const subcategories1 = categories.doc(category).collection('categories')
-        const subcategories2 = subcategories1.doc(subcategory1).collection('categories')
-
-        var unsubscribe
-
-        async function getTitle(docRef) {
-            const doc = await docRef.get()
-            setTitle(doc.data().name)
-        }
-
-        if (subcategory1 || subcategory2) {
-            unsubscribe = subcategories2.onSnapshot(function (querySnapshot) {
-                var ids = []
-                querySnapshot.forEach(function (doc) {
-                    ids.push({ id: doc.id, name: doc.data().name, path: `/categorii/${category}/${subcategory1}/${doc.id}` })
-                })
-                setItems(ids)
-            })
-            if (subcategory2) {
-                getTitle(subcategories2.doc(subcategory2))
-            } else {
-                getTitle(subcategories1.doc(subcategory1))
-            }
+        const categoriesRef = firestore.collection('categories')
+        if (queryParam === 'all') {
+            setTitle('Toate categoriile')
+            fetchCategories(['0klQV3KLSaG9uCWZofCL', 'KIdyISkEMmATZsnAhYpk', 'LY7gSrR5uwYR4t91EOcA'])
         } else {
-            unsubscribe = subcategories1.onSnapshot(function (querySnapshot) {
-                var ids = []
-                querySnapshot.forEach(function (doc) {
-                    ids.push({ id: doc.id, name: doc.data().name, path: `/categorii/${category}/${doc.id}` })
+            categoriesRef.doc(queryParam).get()
+                .then((doc) => {
+                    setTitle(doc.data().name)
+                    fetchCategories(doc.data().childrenCategories)
                 })
-                setItems(ids)
-            })
-            getTitle(categories.doc(category))
         }
+        async function fetchCategories(categoriesIDs) {
+            setItems([])
+            if (categoriesIDs) {
+                var promises = []
+                categoriesIDs.forEach((category) => {
+                    promises.push(categoriesRef.doc(category).get())
+                })
+                const docs = (await Promise.all(promises)).map((doc) => { return { id: doc.id, data: doc.data() } })
+                setItems(docs)
+            }
+        }
+    }, [firestore, queryParam])
 
-        return () => {
-            unsubscribe();
-        }
-    }, [category, firestore, subcategory1, subcategory2])
+    const categoryURL = (category) => {
+        var url = '/categorii'
+        category.data.parentCategories.forEach((parent) => {
+            url += `/${parent}`
+        })
+        url += `/${category.id}`
+        return url
+    }
 
     function BackButton() {
         return (
-            <StyledListItem button component={Link} to={url.substr(0, url.lastIndexOf('/'))}>
+            <StyledListItem button onClick={() => history.goBack()} >
                 <ListItemIcon>
                     <ChevronLeft />
                 </ListItemIcon>
                 <Typography variant='body1' color='error'>
                     Înapoi
                 </Typography>
-            </StyledListItem>
+            </StyledListItem >
         );
     }
 
@@ -132,13 +136,13 @@ export default function CosmoMenu() {
                         </Typography>
                         {collapseFilter ? <ExpandLess /> : <ExpandMore />}
                     </ListItem>
-                    {subcategory1 && <BackButton />}
+                    {category && <BackButton />}
                     <Collapse in={collapseFilter} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {items.map((item, index) => {
-                                return <InfoListItem button key={index} component={Link} to={item.path}>
+                                return <InfoListItem button key={index} component={Link} to={categoryURL(item)}>
                                     <Typography variant='body1' className={classes.listItem}>
-                                        {item.name}
+                                        {item.data.name}
                                     </Typography>
                                 </InfoListItem>
                             })}

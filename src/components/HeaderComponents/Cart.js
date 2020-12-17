@@ -1,13 +1,6 @@
-import { Box, Button, Drawer, Grid, IconButton, makeStyles, Paper, Typography, withStyles } from '@material-ui/core'
-import React, { useEffect, useState } from 'react'
-import RemoveIcon from '@material-ui/icons/Remove';
-import AddIcon from '@material-ui/icons/Add';
-import ListProduct from './ListProduct';
-import CloseIcon from '@material-ui/icons/Close';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { firestoreDB } from '../..';
-import { isEmpty } from 'react-redux-firebase';
-import { useSelector } from 'react-redux';
+import { Button, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
+import React from 'react'
+import ListProduct, { MemoizedListProduct } from './ListProduct';
 import { useCart } from '../../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({
@@ -16,8 +9,7 @@ const useStyles = makeStyles((theme) => ({
     },
     paper: {
         backgroundColor: '#f7ffff',
-        width: 400,
-
+        width: 400
     },
     infoTextColor: {
         color: theme.palette.info.main,
@@ -50,7 +42,6 @@ const useStyles = makeStyles((theme) => ({
 }))
 export default function Cart({ reviewOrder }) {
     const classes = useStyles()
-    // const [products, setProducts] = useState([])
     const cart = useCart()
 
     return (
@@ -58,7 +49,7 @@ export default function Cart({ reviewOrder }) {
             <Grid container item direction='column' spacing={2}>
                 {cart.getProductsInCart().map((product, index) => {
                     return <Grid item key={index}>
-                        <ListProduct product={product} />
+                        <MemoizedListProduct product={product} />
                     </Grid>
                 })}
                 <Grid item>
@@ -78,7 +69,7 @@ export default function Cart({ reviewOrder }) {
                     </Paper>
                 </Grid>
                 <Grid item>
-                    <Button fullWidth color='primary' variant='contained' size='large' onClick={reviewOrder}>
+                    <Button fullWidth color='primary' variant='contained' size='large' onClick={reviewOrder} disabled={!cart.getProductsInCart().length}>
                         Finalizează comanda
                 </Button>
                 </Grid>

@@ -74,7 +74,7 @@ export var cosmoTheme = createMuiTheme({
     },
     succes: {
       main: '#55df99'
-    }
+    },
   },
 })
 

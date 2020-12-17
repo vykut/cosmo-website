@@ -11,7 +11,6 @@ import { Link } from 'react-router-dom'
 import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
 import { useSelector } from 'react-redux';
 import { firebaseFunctions } from '..';
-import { Functions } from '@material-ui/icons';
 import { useCart } from '../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({
@@ -96,17 +95,14 @@ export default function ProductBox({ productID }) {
 
     const { url, path } = useRouteMatch();
 
-    const [isFavorite, setIsFavorite] = useState(false)
     const [quantity, setQuantity] = useState(1)
+    const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
+    const [isBuyDisabled, setIsBuyDisabled] = useState(false)
 
-    const addToFavorite = () => {
-
-        // to add firebase logic
-
-        //then ->
-        functions.httpsCallable('favoriteProduct')({ id: productID })
-        // setIsFavorite(!isFavorite)
-
+    const addToFavorite = async () => {
+        setIsFavoriteLoading(true)
+        await functions.httpsCallable('favoriteProduct')({ id: productID })
+        setIsFavoriteLoading(false)
     }
 
     //fetch product by id
@@ -123,15 +119,9 @@ export default function ProductBox({ productID }) {
 
     const productURL = useCallback(() => {
         var url = '/categorii'
-        if (fetchedProduct.category) {
-            url += `/${fetchedProduct.category}`
-        }
-        if (fetchedProduct.subcategory1) {
-            url += `/${fetchedProduct.subcategory1}`
-        }
-        if (fetchedProduct.subcategory2) {
-            url += `/${fetchedProduct.subcategory2}`
-        }
+        fetchedProduct.categories.forEach((category) => {
+            url += `/${category}`
+        })
         url += `/p/${productID}`
         return url
     }, [productID, fetchedProduct])
@@ -147,18 +137,29 @@ export default function ProductBox({ productID }) {
         }
     }
 
-    const addToCart = () => {
+    const addToCart = async () => {
         // to add firebase logic
-        if (productID && quantity && fetchedProduct && fetchedProduct.price)
-            cart.addProductToCart(productID, fetchedProduct.price, quantity)
-        // show snackbar with succes
+        if (productID && quantity && fetchedProduct && fetchedProduct.price) {
+
+            try {
+                setIsBuyDisabled(true)
+                await cart.addProductToCart(productID, fetchedProduct.price, quantity)
+                setQuantity(1)
+            } catch (err) {
+
+            } finally {
+                setIsBuyDisabled(false)
+            }
+        }
+
+        // show snackbar with succes or error
     }
 
     return (
         <>
             { isLoaded(fetchedProduct) && !isEmpty(fetchedProduct) && <Paper className={classes.paper}>
                 <Badge badgeContent={
-                    <IconButton className={classes.favorite} onClick={addToFavorite}>
+                    <IconButton className={classes.favorite} onClick={addToFavorite} disabled={isFavoriteLoading}>
                         {!isEmpty(profile) && profile.favoriteProducts && profile.favoriteProducts.includes(productID) ? <FavoriteIcon color='error' /> : <FavoriteBorderIcon color='error' />}
                     </IconButton>
                 } >
@@ -207,6 +208,7 @@ export default function ProductBox({ productID }) {
                     variant='contained'
                     startIcon={<ShoppingCartIcon />}
                     onClick={addToCart}
+                    disabled={isBuyDisabled}
                 >
                     Adaugă în coș
                     </Button>
