@@ -72,7 +72,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
         <Container component="main" maxWidth="md" className={classes.form}>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
-                    <Grid container item xs={6} spacing={2} direction='column'>
+                    <Grid container item xs={12} sm={6} spacing={2} direction='column'>
                         <Grid item>
                             <TextField
                                 autoComplete="fname"
@@ -114,7 +114,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
                     <Grid item>
                         <Divider className={classes.divider} orientation='vertical' />
                     </Grid>
-                    <Grid container item xs={6} direction='column' spacing={2}>
+                    <Grid container item xs={12} sm={6} direction='column' spacing={2}>
                         <Grid item>
                             <TextField
                                 variant="outlined"

@@ -4,9 +4,6 @@ import { MemoizedListProduct } from './ListProduct';
 import { useCart } from '../../contexts/CartContext';
 
 const useStyles = makeStyles((theme) => ({
-    drawer: {
-
-    },
     paper: {
         backgroundColor: '#f7ffff',
         width: 400
@@ -62,7 +59,7 @@ export default function Cart({ reviewOrder }) {
                             </Grid>
                             <Grid item>
                                 <Typography variant='h6'>
-                                    {Math.round((cart.getCart().totalPrice + Number.EPSILON) * 100) / 100} RON
+                                    {cart.getCart() && cart.getCart().totalPrice && Math.round((cart.getCart().totalPrice + Number.EPSILON) * 100) / 100} RON
                                 </Typography>
                             </Grid>
                         </Grid>

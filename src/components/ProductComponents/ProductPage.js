@@ -10,7 +10,7 @@ import { isEmpty, isLoaded, useFirestoreConnect } from 'react-redux-firebase';
 import { useSelector } from 'react-redux';
 import { useCart } from '../../contexts/CartContext'
 import { firebaseFunctions } from '../..';
-
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -86,6 +86,7 @@ export default function ProductPage() {
     const classes = useStyles()
     const { productID } = useParams()
     const cart = useCart()
+    const profile = useSelector(state => state.firebase.profile)
     const functions = firebaseFunctions
 
     const [state, setState] = useState({ quantity: 1 })
@@ -226,7 +227,7 @@ export default function ProductPage() {
                                                 onClick={addToFavorite}
                                                 disabled={isFavoriteDisabled}
                                             >
-                                                <FavoriteIcon />
+                                                {!isEmpty(profile) && profile.favoriteProducts && profile.favoriteProducts.includes(productID) ? <CloseIcon /> : <FavoriteIcon />}
                                             </Button>
                                         </ButtonGroup>
                                     </Grid>

@@ -23,7 +23,7 @@ export function CartProvider({ children }) {
     }, [])
 
     const [cart, setCart] = useState(initialCart)
-    const [firebaseCart, setFirebaseCart] = useState({})
+    const [firebaseCart, setFirebaseCart] = useState(initialCart)
     const [productsInFirebaseCart, setProductsInFirebaseCart] = useState([])
     const [isFirestoreCart, setIsFirestoreCart] = useState(false)
 

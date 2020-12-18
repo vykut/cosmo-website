@@ -18,8 +18,8 @@ import { isEmpty } from "react-redux-firebase";
 import { useSelector } from "react-redux";
 import { useDialog } from '../../contexts/DialogContext';
 import { capitalize } from '../../utils/utils';
-import { firestoreDB } from '../..';
 import { useCart } from '../../contexts/CartContext';
+import FavoritesMenu from './FavoritesMenu';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -70,16 +70,6 @@ const useStyles = makeStyles((theme) => ({
         height: 45,
         margin: theme.spacing()
     },
-    button: {
-        padding: theme.spacing(1, 3),
-        textTransform: 'none',
-    },
-    label: {
-        marginRight: theme.spacing(2),
-        [theme.breakpoints.down('sm')]: {
-            display: 'none',
-        },
-    },
     grow: {
         flexGrow: 1,
     },
@@ -115,6 +105,16 @@ const useStyles = makeStyles((theme) => ({
     closeButton: {
         color: theme.palette.error.main,
     },
+    label: {
+        marginRight: theme.spacing(2),
+        [theme.breakpoints.down('sm')]: {
+            display: 'none',
+        },
+    },
+    button: {
+        padding: theme.spacing(1, 3),
+        textTransform: 'none',
+    },
 }));
 
 export default function Header({ tab, handleTabChange }) {
@@ -123,10 +123,11 @@ export default function Header({ tab, handleTabChange }) {
     const auth = useSelector(state => state.firebase.auth);
     const profile = useSelector(state => state.firebase.profile)
     const dialog = useDialog()
-    const firestore = firestoreDB
     const cart = useCart()
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+
 
     const toggleDrawer = (isOpen) => (e) => {
         if (e.type === 'keydown' && (e.key === 'Tab' || e.key === 'Shift')) {
@@ -188,19 +189,8 @@ export default function Header({ tab, handleTabChange }) {
                             </Typography>
                             <AccountCircle />
                         </Button>
-                        <Button
-                            disableElevation
-                            color='inherit'
-                            size='large'
-                            className={classes.button}
-                        >
-                            <Typography variant='body1' className={classes.label}>
-                                Favorite
-                            </Typography>
-                            <Badge badgeContent={!isEmpty(profile) && profile.favoriteProducts ? profile.favoriteProducts.length : 0} color="secondary">
-                                <FavoriteIcon />
-                            </Badge>
-                        </Button>
+
+                        <FavoritesMenu />
                         <Button
                             disableElevation
                             color='inherit'
