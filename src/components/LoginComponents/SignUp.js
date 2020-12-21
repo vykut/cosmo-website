@@ -58,6 +58,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
                 email: form.email.trim(),
                 password: form.password.trim(),
             })
+            firebase.auth().languageCode = 'ro'
             await firebase.updateProfile({ firstName: capitalize(form.firstName), lastName: capitalize(form.lastName), phone: form.phone, favoriteProducts: [] })
             setAlert({ severity: 'success', message: 'Contul a fost creat cu succes.' })
             dialog.hideDialog()

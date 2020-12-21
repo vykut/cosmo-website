@@ -11,7 +11,6 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-
 const DialogContext = React.createContext()
 
 export function useDialog() {
@@ -49,7 +48,14 @@ export function DialogProvider({ children }) {
 
     function LoginDialog() {
         return (
-            <Dialog maxWidth='sm' fullWidth fullScreen={fullScreen} open={loginDialogOpen} onClose={toggleDialog(false)}>
+            <Dialog
+                maxWidth='sm'
+                fullWidth
+                fullScreen={fullScreen}
+                open={loginDialogOpen}
+                onClose={toggleDialog(false)}
+                PaperProps={{ style: { backgroundColor: '#f7ffff' } }}
+            >
                 <DialogTitle>
                     <Grid container justify='space-between' alignItems='center'>
                         <Grid item>
@@ -68,8 +74,6 @@ export function DialogProvider({ children }) {
             </Dialog >
         )
     }
-
-
 
     return (
         <>

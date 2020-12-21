@@ -13,6 +13,7 @@
     "fontsource-roboto": "^3.0.3",
     "onsenui": "^2.11.1",
     "react-firebase-hooks": "^2.2.0",
+    "react-google-button": "^0.7.1",
     "react-redux": "^7.2.2",
     "react-redux-firebase": "^3.8.1",
     "react-router-dom": "^5.2.0",

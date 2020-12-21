@@ -15,7 +15,7 @@ export const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '100%'
+    width: '100%',
   },
   loginLogo: {
     margin: theme.spacing(3, 0),
