@@ -484,12 +484,24 @@ exports.updateOrderTotalPriceAndQuantity = functions
 exports.deleteAccount = functions
   .region('europe-west1')
   .auth.user()
-  .onDelete(user => {
-    return admin.firestore().collection('users').doc(user.uid).delete()
+  .onDelete(async (user) => {
+    let batch = admin.firestore().batch()
+    let addresses = await admin.firestore().collection('addresses').where('userID', '==', user.id).get()
+    addresses.forEach((address) => {
+      batch.delete(address)
+    })
+    let userToBeDeleted = admin.firestore().collection('users').doc(user.uid)
+    batch.delete(userToBeDeleted)
+    return batch.commit()
       .then(() => {
         console.log(`Userul ${user.uid} a fost sters cu succes`)
         return {
           result: `Userul a fost sters cu succes`
+        }
+      })
+      .catch((error) => {
+        return {
+          error,
         }
       })
   })

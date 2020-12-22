@@ -44,7 +44,7 @@ export default function SignIn({ setAlert, setLoginComponent }) {
         setLoading(false)
     }
 
-    async function handleGoogleSinIn() {
+    async function handleGoogleSignIn() {
         firebase.login({
             provider: 'google',
             type: 'popup',
@@ -102,7 +102,7 @@ export default function SignIn({ setAlert, setLoginComponent }) {
                     </Grid>
                     <Grid item>
                         <GoogleButton
-                            onClick={handleGoogleSinIn}
+                            onClick={handleGoogleSignIn}
                             style={{ marginBottom: 16 }}
                         />
                     </Grid>
