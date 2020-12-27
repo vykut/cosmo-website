@@ -9,7 +9,6 @@ import Badge from '@material-ui/core/Badge';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import FavoriteIcon from '@material-ui/icons/Favorite';
 import { Button, Link } from '@material-ui/core';
 import AppBarMenu from './Menu';
 import CartDrawer from './CartDrawer';
