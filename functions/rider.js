@@ -26,7 +26,7 @@ exports.assignOrder = functions
       .then(() => {
         console.log(`Comanda cu id-ul ${orderRef.id} a fost atribuita livratorului ${context.auth.uid}`)
         return {
-          result: `Comanda a fost atribuita acceptata`
+          result: `Comanda a fost acceptata`
         }
       })
   })

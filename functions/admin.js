@@ -1,11 +1,10 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-
 exports.addAdmin = functions
     .region('europe-west1')
     .https.onCall(async (data, context) => {
-        if (context.auth.token.admin !== true) {
+        if (!context.auth.token.admin) {
             throw new functions.https.HttpsError(
                 'unauthenticated',
                 'numai administratorii au acces la aceasta functie.'
@@ -24,7 +23,7 @@ exports.addAdmin = functions
 exports.addRider = functions
     .region('europe-west1')
     .https.onCall(async (data, context) => {
-        if (context.auth.token.admin !== true) {
+        if (!context.auth.token.admin) {
             throw new functions.https.HttpsError(
                 'unauthenticated',
                 'numai administratorii au acces la aceasta functie.'
