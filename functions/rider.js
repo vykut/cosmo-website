@@ -71,10 +71,13 @@ exports.completeOrder = functions
     }
 
     let orderRef = admin.firestore().collection('orders').doc(data.orderID)
+    let usersRef = admin.firestore().collection('users')
+
 
     return admin.firestore().runTransaction(async transaction => {
       let order = await transaction.get(orderRef)
-      let state = await order.get('state')
+      let state = order.data().state
+      let userID = order.data().userID
 
       if (state === 'assigned') {
         return transaction.update(orderRef, {

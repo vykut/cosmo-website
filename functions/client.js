@@ -505,3 +505,23 @@ exports.deleteAccount = functions
         }
       })
   })
+
+exports.updateNumberOfOrdersCompletedByUser = functions
+  .region('europe-west1')
+  .firestore.document('orders/{orderID}')
+  .onWrite(async (change, context) => {
+    let orderRef = admin.firestore().collection('orders').doc(context.params.orderID)
+    let userID = change.before.data().userID
+    let userRef = admin.firestore().collection('users').doc(userID)
+
+    if (change.before.data().state === 'delivered') {
+      return userRef.update({
+        numberOfOrdersCompleted: admin.firestore.FieldValue.increment(-1)
+      })
+    }
+    if (change.after.data().state === 'delivered') {
+      return userRef.update({
+        numberOfOrdersCompleted: admin.firestore.FieldValue.increment(1)
+      })
+    }
+  })
