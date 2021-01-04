@@ -23,7 +23,6 @@ export default function ReviewOrder({ placeOrder }) {
     const functions = firebaseFunctions
     const auth = useSelector(state => state.firebase.auth);
     const cart = useCart()
-    const deliveryPrice = 10
 
     // save address if it's a new one
     const [address, setAddress] = useState({})
@@ -127,7 +126,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography>
-                                            {deliveryPrice} RON
+                                            {cart.deliveryPrice || 10} RON
                                 </Typography>
                                     </Grid>
                                 </Grid>
@@ -139,7 +138,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant='h6'>
-                                            {Math.round((cart.getCart().totalPrice + deliveryPrice + Number.EPSILON) * 100) / 100} RON
+                                            {Math.round((cart.getCart().totalPrice + (cart.deliveryPrice || 10) + Number.EPSILON) * 100) / 100} RON
                                         </Typography>
                                     </Grid>
                                 </Grid>

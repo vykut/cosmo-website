@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux";
-import { isEmpty } from "react-redux-firebase";
+import { isEmpty, useFirestoreConnect } from "react-redux-firebase";
 import { firebaseFunctions, firestoreDB } from "..";
 
 const CartContext = createContext()
@@ -14,6 +14,7 @@ export function CartProvider({ children }) {
     const functions = firebaseFunctions
     const firestore = firestoreDB
 
+
     const initialCart = useMemo(() => {
         return {
             products: {},
@@ -26,6 +27,15 @@ export function CartProvider({ children }) {
     const [firebaseCart, setFirebaseCart] = useState(initialCart)
     const [productsInFirebaseCart, setProductsInFirebaseCart] = useState([])
     const [isFirestoreCart, setIsFirestoreCart] = useState(false)
+
+    useFirestoreConnect([{
+        collection: 'stores',
+        doc: 'CosmoMarket',
+    }])
+
+    const deliveryPrice = useSelector(
+        ({ firestore }) => firestore.data.stores['CosmoMarket'].deliveryPrice
+    )
 
     const shouldUploadCartToFirestore = !isEmpty(auth) && cart.products && !isFirestoreCart && !isFirestoreCart
     useEffect(() => {
@@ -168,6 +178,10 @@ export function CartProvider({ children }) {
     }
 
     const value = {
+        //vars
+        deliveryPrice,
+
+        //functions
         addProductToCart,
         deleteProductFromCart,
         getCart,

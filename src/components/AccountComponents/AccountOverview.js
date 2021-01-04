@@ -1,6 +1,5 @@
 import { Box, Button, ButtonGroup, Grid, makeStyles, Paper, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
-import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Save';
 import PersonalData from './PersonalData'
 import AddressForm from '../AuxiliaryComponents/AddressForm';
@@ -8,6 +7,7 @@ import { Alert } from '@material-ui/lab';
 import PastOrders from './PastOrders';
 import { useFirebase } from 'react-redux-firebase';
 import { firebaseFunctions } from '../..';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -53,19 +53,16 @@ export default function AccountOverview() {
 
     const handleAddress = async (e) => {
         e.preventDefault()
-        console.log(address.data)
         setIsChangingAddress(true)
         if (addressKey === -1) {
             try {
                 const response = await functions.httpsCallable('addAddress')({ ...address.data })
-                console.log(response)
             } catch (err) {
                 console.log(err)
             }
         } else {
             try {
                 const response = await functions.httpsCallable('editAddress')({ ...address.data, addressID: address.id })
-                console.log(response)
             } catch (err) {
                 console.log(err)
             }
@@ -144,7 +141,7 @@ export default function AccountOverview() {
                                             <Grid item>
                                                 <ButtonGroup>
                                                     {addressKey > -1 &&
-                                                        <Button variant='contained' startIcon={<CloseIcon />} className={classes.errorButtonColor} onClick={handleDelete}>
+                                                        <Button variant='contained' startIcon={<DeleteForeverIcon />} className={classes.errorButtonColor} onClick={handleDelete}>
                                                             Șterge adresa
                                                         </Button>
                                                     }

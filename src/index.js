@@ -60,7 +60,7 @@ export var cosmoTheme = createMuiTheme({
       contrastText: '#fff'
     },
     info: {
-      main: '#894475',
+      main: '#212121',
       contrastText: '#fff'
     },
     succes: {

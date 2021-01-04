@@ -13,6 +13,14 @@ import { useSelector } from 'react-redux'
 import { isLoaded, isEmpty, useFirestoreConnect } from 'react-redux-firebase'
 import { CartProvider } from '../contexts/CartContext';
 
+function AuthIsLoaded({ children }) {
+  const auth = useSelector(state => state.firebase.auth)
+  if (!isLoaded(auth)) {
+    return <></>;
+  }
+  return children
+}
+
 // A wrapper for <Route> that redirects to the login
 // screen if you're not yet authenticated or if auth is not
 // yet loaded
@@ -112,33 +120,35 @@ function App() {
   }
 
   return (
-    <CartProvider>
-      <DialogProvider>
-        <Header />
-        <Switch>
-          <Route path='/acasa' >
-            <CosmoBreadcrumbs />
-            <Home />
-          </Route>
-          <PrivateRoute exact path='/contul-meu'>
-            <AccountOverview />
-          </PrivateRoute>
-          <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?/p/:productID'>
-            <CosmoBreadcrumbs />
-            <ProductPage />
-          </Route>
-          <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?'>
-            <CosmoBreadcrumbs />
-            <ProductsPage />
-          </Route>
-          <Route exact path='/toate-categoriile'>
-            <CosmoBreadcrumbs />
-            <ProductsPage />
-          </Route>
-          <Redirect to='/acasa' />
-        </Switch>
-      </DialogProvider>
-    </CartProvider>
+    <AuthIsLoaded>
+      <CartProvider>
+        <DialogProvider>
+          <Header />
+          <Switch>
+            <Route path='/acasa' >
+              <CosmoBreadcrumbs />
+              <Home />
+            </Route>
+            <PrivateRoute exact path='/contul-meu'>
+              <AccountOverview />
+            </PrivateRoute>
+            <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?/p/:productID'>
+              <CosmoBreadcrumbs />
+              <ProductPage />
+            </Route>
+            <Route exact path='/categorii/:category/:subcategory1?/:subcategory2?'>
+              <CosmoBreadcrumbs />
+              <ProductsPage />
+            </Route>
+            <Route exact path='/toate-categoriile'>
+              <CosmoBreadcrumbs />
+              <ProductsPage />
+            </Route>
+            <Redirect to='/acasa' />
+          </Switch>
+        </DialogProvider>
+      </CartProvider>
+    </AuthIsLoaded>
   )
 }
 

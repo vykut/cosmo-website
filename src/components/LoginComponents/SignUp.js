@@ -55,7 +55,7 @@ export default function SignUp({ setAlert, setLoginComponent }) {
         try {
             setLoading(true)
             await firebase.createUser({
-                email: form.email.trim(),
+                email: form.email.trim().toLoweCase(),
                 password: form.password.trim(),
             })
             firebase.auth().languageCode = 'ro'

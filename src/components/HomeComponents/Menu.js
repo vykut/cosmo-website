@@ -92,13 +92,14 @@ export default function CosmoMenu() {
                 categoriesIDs.forEach((category) => {
                     promises.push(categoriesRef.doc(category).get())
                 })
-                const docs = (await Promise.all(promises)).map((doc) => { return { id: doc.id, data: doc.data() } })
+                var docs = (await Promise.all(promises)).map((doc) => { return { id: doc.id, data: doc.data() } })
+                docs = docs.filter(doc => doc.data.enabled)
                 setItems(docs)
             }
         }
     }, [firestore, queryParam])
 
-    const categoryURL = (category) => {
+    const categoryURL = (category) => () => {
         var url = '/categorii'
         category.data.parentCategories.forEach((parent) => {
             url += `/${parent}`
@@ -139,7 +140,7 @@ export default function CosmoMenu() {
                     {category && <BackButton />}
                     <Collapse in={collapseFilter} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
-                            {items.map((item, index) => {
+                            {items.filter(x => x).map((item, index) => {
                                 return <InfoListItem button key={index} component={Link} to={categoryURL(item)}>
                                     <Typography variant='body1' className={classes.listItem}>
                                         {item.data.name}

@@ -135,10 +135,13 @@ exports.placeOrder = functions
 
     let cartRef = admin.firestore().collection('carts').doc(context.auth.uid)
     let productsInCartRef = cartRef.collection('products')
+    let marketRef = admin.firestore().collection('stores').doc('CosmoMarket')
     let cartProducts = await productsInCartRef.get()
+
     if (!cartProducts.empty) {
       return admin.firestore().runTransaction(async transaction => {
 
+        let market = await transaction.get(marketRef)
         //move products from cart to order
         let products = []
 
@@ -149,6 +152,7 @@ exports.placeOrder = functions
 
         products = await Promise.all(products)
 
+
         let newOrderRef = admin.firestore().collection('orders').doc()
         transaction.set(newOrderRef, {
           addressID: data.addressID,
@@ -156,7 +160,8 @@ exports.placeOrder = functions
           payment: data.payment,
           state: 'pending',
           notes: data.notes,
-          userID: context.auth.uid
+          userID: context.auth.uid,
+          deliveryPrice: market.data().deliveryPrice || 10
         })
         let productsInOrderRef = newOrderRef.collection('products')
 
@@ -514,14 +519,16 @@ exports.updateNumberOfOrdersCompletedByUser = functions
     let userID = change.before.data().userID
     let userRef = admin.firestore().collection('users').doc(userID)
 
-    if (change.before.data().state === 'delivered') {
-      return userRef.update({
-        numberOfOrdersCompleted: admin.firestore.FieldValue.increment(-1)
-      })
-    }
-    if (change.after.data().state === 'delivered') {
-      return userRef.update({
-        numberOfOrdersCompleted: admin.firestore.FieldValue.increment(1)
-      })
+    if (change.before.data().state !== change.after.data().state) {
+      if (change.before.data().state === 'delivered') {
+        return userRef.update({
+          numberOfOrdersCompleted: admin.firestore.FieldValue.increment(-1)
+        })
+      }
+      if (change.after.data().state === 'delivered') {
+        return userRef.update({
+          numberOfOrdersCompleted: admin.firestore.FieldValue.increment(1)
+        })
+      }
     }
   })

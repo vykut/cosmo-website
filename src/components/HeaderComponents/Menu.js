@@ -84,7 +84,6 @@ export default function AppBarMenu() {
     }, [url, category])
 
     history.listen((location) => {
-        console.log(location)
         if (location === '/acasa') {
             setTab(0)
         } else if (category) {
@@ -95,7 +94,6 @@ export default function AppBarMenu() {
     })
 
     const handleTabChange = (e, index) => {
-        console.log(e, index)
         history.push(indexToPath(index))
     }
 

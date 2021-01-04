@@ -25,10 +25,10 @@ const useStyles = makeStyles((theme) => ({
     productsContainer: {
     },
     title: {
-        color: theme.palette.info.main
+        color: theme.palette.text.primary
     },
     image: {
-        color: theme.palette.info.main
+        color: theme.palette.text.primary
     },
     link: {
         display: 'flex',

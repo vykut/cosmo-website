@@ -5,6 +5,8 @@ import RoomIcon from '@material-ui/icons/Room';
 import PhoneInTalkIcon from '@material-ui/icons/PhoneInTalk';
 import StoreIcon from '@material-ui/icons/Store';
 import ScheduleIcon from '@material-ui/icons/Schedule';
+import { isEmpty, useFirestoreConnect } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
     breadcrumbs: {
@@ -37,6 +39,19 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
     const classes = useStyles()
 
+    const cosmoMarketDoc = 'CosmoMarket'
+    useFirestoreConnect([{
+        collection: 'stores',
+        doc: cosmoMarketDoc,
+    }])
+
+    const storeData = useSelector(
+        ({ firestore }) => firestore.data.stores && firestore.data.stores[cosmoMarketDoc]
+    )
+
+    if (isEmpty(storeData))
+        return null
+
     function StoreInfo() {
         return (
             <Grid container justify='center'>
@@ -65,8 +80,8 @@ export default function Home() {
                                     Ne poți contacta la
                                     </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    0722123456
-                                    </Typography>
+                                    {storeData.phone}
+                                </Typography>
                             </Grid>
                         </Grid>
                     </Paper>
@@ -82,8 +97,8 @@ export default function Home() {
                                     Adresa magazinului
                                     </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    Soseaua de centura nr. 200
-                                    </Typography>
+                                    {storeData.address}
+                                </Typography>
                             </Grid>
                         </Grid>
                     </Paper>
@@ -99,11 +114,11 @@ export default function Home() {
                                     Orar
                                     </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    Lu - Vi: 9 - 22
-                                    </Typography>
+                                    Lu - Vi: {storeData.weekTimeTable}
+                                </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    Sa - Du: 10 - 20
-                                    </Typography>
+                                    Sa - Du: {storeData.weekendTimeTable}
+                                </Typography>
                             </Grid>
                         </Grid>
                     </Paper>
