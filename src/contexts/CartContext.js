@@ -28,13 +28,14 @@ export function CartProvider({ children }) {
     const [productsInFirebaseCart, setProductsInFirebaseCart] = useState([])
     const [isFirestoreCart, setIsFirestoreCart] = useState(false)
 
+    const cosmoMarketDoc = 'CosmoMarket'
     useFirestoreConnect([{
         collection: 'stores',
-        doc: 'CosmoMarket',
+        doc: cosmoMarketDoc,
     }])
 
-    const deliveryPrice = useSelector(
-        ({ firestore }) => firestore.data.stores['CosmoMarket'].deliveryPrice
+    const cosmoMarketStore = useSelector(
+        ({ firestore }) => firestore.data.stores && firestore.data.stores[cosmoMarketDoc]
     )
 
     const shouldUploadCartToFirestore = !isEmpty(auth) && cart.products && !isFirestoreCart && !isFirestoreCart
@@ -179,7 +180,7 @@ export function CartProvider({ children }) {
 
     const value = {
         //vars
-        deliveryPrice,
+        cosmoMarketStore,
 
         //functions
         addProductToCart,

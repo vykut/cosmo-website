@@ -80,8 +80,7 @@ export default function ListProduct({ product }) {
     const cart = useCart()
     const firestore = firestoreDB
     const [fetchedProduct, setFetchedProduct] = useState({})
-    const [isDeleteDisabled, setIsDeleteDisabled] = useState(false)
-    const [isIncrementDisabled, setIsIncrementDisabled] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         const unsubscribe = firestore.collection('products').doc(product.id)
@@ -104,30 +103,51 @@ export default function ListProduct({ product }) {
 
     const adjustQuantity = async (increment) => {
         if (!increment && product.data.quantity === 1) {
-            setIsDeleteDisabled(true)
-            await removeProductFromCart()
-            setIsDeleteDisabled(false)
-            return
+            try {
+                setIsLoading(true)
+                await removeProductFromCart()
+            } catch (err) {
+                console.log(err)
+            } finally {
+                setIsLoading(false)
+                return
+            }
         }
         if (increment && product.data.quantity < 20) {
-            setIsIncrementDisabled(true)
-            await cart.incrementQuantity(product.id)
-            setIsIncrementDisabled(false)
-            return
+            try {
+                setIsLoading(true)
+                await cart.incrementQuantity()
+            } catch (err) {
+                console.log(err)
+            } finally {
+                setIsLoading(false)
+                return
+            }
         }
         if (!increment && product.data.quantity > 1) {
-            setIsIncrementDisabled(true)
-            await cart.decrementQuantity(product.id)
-            setIsIncrementDisabled(false)
-            return
+            try {
+                setIsLoading(true)
+                await cart.decrementQuantity(product.id)
+            } catch (err) {
+                console.log(err)
+            } finally {
+                setIsLoading(false)
+                return
+            }
         }
     }
 
     const removeProductFromCart = async () => {
         // remove item from cart
-        setIsDeleteDisabled(true)
-        await cart.deleteProductFromCart(product.id)
-        setIsDeleteDisabled(false)
+        try {
+            setIsLoading(true)
+            await cart.deleteProductFromCart(product.id)
+        } catch (err) {
+            console.log(err)
+        } finally {
+            setIsLoading(false)
+            return
+        }
     }
 
     return (
@@ -173,7 +193,7 @@ export default function ListProduct({ product }) {
                                         className={classes.quantityDecrement}
                                         onClick={() => { adjustQuantity(false) }}
                                         id='decrement'
-                                        disabled={isDeleteDisabled || isIncrementDisabled}
+                                        disabled={isLoading}
                                     >
                                         <RemoveIcon />
                                     </IconButton>
@@ -191,7 +211,7 @@ export default function ListProduct({ product }) {
                                         className={classes.quantityIncrement}
                                         onClick={() => { adjustQuantity(true) }}
                                         id='increment'
-                                        disabled={isIncrementDisabled}
+                                        disabled={isLoading}
                                     >
                                         <AddIcon />
                                     </IconButton>
@@ -201,7 +221,7 @@ export default function ListProduct({ product }) {
                                 <Button
                                     className={classes.removeButton}
                                     onClick={removeProductFromCart}
-                                    disabled={isDeleteDisabled}
+                                    disabled={isLoading}
                                 >
                                     <DeleteForeverIcon />
                                 </Button>

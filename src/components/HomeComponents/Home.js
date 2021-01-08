@@ -39,20 +39,22 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
     const classes = useStyles()
 
-    const cosmoMarketDoc = 'CosmoMarket'
-    useFirestoreConnect([{
-        collection: 'stores',
-        doc: cosmoMarketDoc,
-    }])
 
-    const storeData = useSelector(
-        ({ firestore }) => firestore.data.stores && firestore.data.stores[cosmoMarketDoc]
-    )
-
-    if (isEmpty(storeData))
-        return null
 
     function StoreInfo() {
+        const cosmoMarketDoc = 'CosmoMarket'
+        useFirestoreConnect([{
+            collection: 'stores',
+            doc: cosmoMarketDoc,
+        }])
+
+        const storeData = useSelector(
+            ({ firestore }) => firestore.data.stores && firestore.data.stores[cosmoMarketDoc]
+        )
+
+        if (isEmpty(storeData))
+            return null
+
         return (
             <Grid container justify='center'>
                 <Grid item xs={6} sm={3} style={{ padding: 4 }}>

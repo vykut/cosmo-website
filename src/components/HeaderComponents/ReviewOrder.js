@@ -30,6 +30,8 @@ export default function ReviewOrder({ placeOrder }) {
     const [notes, setNotes] = useState('')
     const [loading, setLoading] = useState(false)
 
+    const deliveryPrice = cart.cosmoMarketStore && cart.cosmoMarketStore.deliveryPrice
+
     //fetch cart
     const validateFormAndPlaceOrder = async (e) => {
         e.preventDefault()
@@ -126,7 +128,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography>
-                                            {cart.deliveryPrice || 10} RON
+                                            {deliveryPrice || 10} RON
                                 </Typography>
                                     </Grid>
                                 </Grid>
@@ -138,7 +140,7 @@ export default function ReviewOrder({ placeOrder }) {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant='h6'>
-                                            {Math.round((cart.getCart().totalPrice + (cart.deliveryPrice || 10) + Number.EPSILON) * 100) / 100} RON
+                                            {Math.round((cart.getCart().totalPrice + (deliveryPrice || 10) + Number.EPSILON) * 100) / 100} RON
                                         </Typography>
                                     </Grid>
                                 </Grid>
