@@ -306,7 +306,8 @@ exports.cancelOrder = functions
 
         products.forEach(productData => {
           transaction.set(productsInCartRef.doc(productData.id), {
-            quantity: productData.get('quantity')
+            quantity: productData.get('quantity'),
+            price: productData.get('price'),
           });
         })
       } else {
@@ -531,4 +532,18 @@ exports.updateNumberOfOrdersCompletedByUser = functions
         })
       }
     }
+  })
+
+exports.updateOrderInProgress = functions
+  .region('europe-west1')
+  .firestore.document('orders/{orderID}')
+  .onWrite(async (change, context) => {
+    let orderRef = admin.firestore().collection('orders').doc(context.params.orderID)
+    let userID = change.before.data().userID
+    let userRef = admin.firestore().collection('users').doc(userID)
+
+    if (change.after.data().state === 'pending' || change.after.data().state === 'assigned')
+      return userRef.update({ orderInProgress: true })
+    else
+      return userRef.update({ orderInProgress: false })
   })

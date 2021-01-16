@@ -31,6 +31,7 @@ exports.assignOrder = functions
       })
   })
 
+// this functions just cancels delivery; it doesn't cancel the ORDER
 exports.cancelDelivery = functions
   .region('europe-west1')
   .https.onCall((data, context) => {
