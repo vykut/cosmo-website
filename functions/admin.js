@@ -1,9 +1,5 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { CloudTasksClient } = require('@google-cloud/tasks')
-var moment = require('moment-timezone');
-moment.tz.add("Europe/Bucharest|BMT EET EEST|-1I.o -20 -30|0121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121|-1xApI.o 20LI.o RA0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1Axc0 On0 1fA0 1a10 1cO0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cK0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cL0 1cN0 1cL0 1fB0 1nX0 11E0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|19e5",)
-moment = moment.tz.setDefault('Europe/Bucharest');
 
 exports.addAdmin = functions
     .region('europe-west1')
@@ -43,145 +39,67 @@ exports.addRider = functions
         });
     })
 
-export const onSetTimetable =
-    functions
-        .region('europe-west1')
-        .firestore.document('/stores/CosmoMarket')
-        .onWrite(async (change, context) => {
+exports.scheduleWeekendTimetable = functions
+    .region('europe-west1')
+    .pubsub
+    .schedule(`0 * * * 6,0`)
+    .timeZone('Europe/Bucharest')
+    .onRun(async ctx => {
+        function convertTZ(date, tzString) {
+            return new Date(date.toLocaleString("en-US", { timeZone: tzString }));
+        }
 
-            const oldData = change.before.data()
-            const newData = change.after.data()
+        const convertedDate = convertTZ(new Date(), "Europe/Bucharest")
+        const currentHour = convertedDate.getHours(); // 17
 
-            const { oldOpenHour, oldCloseHour, oldWeekendOpenHour, oldWeekendCloseHour } = oldData
-            const { newOpenHour, newCloseHour, newWeekendOpenHour, newWeekendCloseHour } = newData
+        const storeRef = admin.firestore().collection('stores').doc('CosmoMarket')
+        return admin.firestore().runTransaction(async transaction => {
+            const store = await transaction.get(storeRef)
+            const storeData = store.data()
 
-            //if store is closed explictly by admin // always open // timetable // always closed
-            //return
-
-            if (oldOpenHour === newOpenHour && oldCloseHour === newCloseHour)
+            if (storeData.isDisabled)
                 return
 
-            const tasksClient = new CloudTasksClient()
-            const project = 'cosmo-market'
-            const location = 'europe-west1'
-
-
-            if (oldOpenHour !== newOpenHour) {
-                const queue = 'cosmo-timetable-open'
-                const queuePath = tasksClient.queuePath(project, location, queue)
-
-                const newOpenHourMoment = moment(newOpenHour, 'HH')
-                const now = moment()
-
-                const diff = newOpenHourMoment.diff(now, 'seconds')
-
-                var seconds
-                if (diff > 0) {
-                    seconds = diff
-                } else {
-                    newOpenHourMoment.add(1, 'days')
-                    seconds = newOpenHourMoment.diff(now, 'seconds')
-                }
-
-                const url = `https://${location}-${project}.cloudfunctions.net/openCosmoMarket`
-                const payload = { openingDate: newOpenHourMoment.toDate() }
-
-                const task = {
-                    httpRequest: {
-                        httpMethod: 'POST',
-                        url,
-                        body: Buffer.from(JSON.stringify(payload)).toString('base64'),
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    },
-                    scheduleTime: {
-                        seconds
-                    }
-                }
-
-                const [response] = await tasksClient.createTask({ parent: queuePath, task })
-
-                const openTask = response.name
-                await change.after.ref.update({ openingTimeTaskName: openTask })
+            if (storeData.weekendOpenHour == currentHour) {
+                return transaction.update(storeRef, { isOpen: true })
             }
 
-            if (oldCloseHour !== newCloseHour) {
-                const queue = 'cosmo-timetable-close'
-                const queuePath = tasksClient.queuePath(project, location, queue)
-
-                const newCloseHourMoment = moment(newCloseHour, 'HH')
-                const now = moment()
-
-                const diff = newCloseHourMoment.diff(now, 'seconds')
-
-                var seconds
-                if (diff > 0) {
-                    seconds = diff
-                } else {
-                    newOpenHourMoment.add(1, 'days')
-                    seconds = newOpenHourMoment.diff(now, 'seconds')
-                }
-
-                const url = `https://${location}-${project}.cloudfunctions.net/closeCosmoMarket`
-                const payload = { newCloseHour }
+            if (storeData.weekendCloseHour == currentHour) {
+                return transaction.update(storeRef, { isOpen: false })
             }
-
-
-
-
-
-
-
-            const task = {
-                httpRequest: {
-                    httpMethod: 'POST',
-                    url,
-                    body: Buffer.from(JSON.stringify(payload)).toString('base64'),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                },
-                scheduleTime: {
-                    seconds: expirationAtSeconds
-                }
-            }
-
-            const [response] = await tasksClient.createTask({ parent: queuePath, task })
-
-            const expirationTask = response.name
-            const update: ExpiringDocumentData = { expirationTask }
-            await snapshot.ref.update(update)
+            return
         })
+    })
 
-
-export const firestoreTtlCallback = functions.https.onRequest(async (req, res) => {
-    const payload = req.body as ExpirationTaskPayload
-    try {
-        await admin.firestore().doc(payload.docPath).delete()
-        res.send(200)
-    }
-    catch (error) {
-        console.error(error)
-        res.status(500).send(error)
-    }
-})
-
-
-export const onUpdatePostCancelExpirationTask =
-    functions.firestore.document('/posts/{id}').onUpdate(async change => {
-        const before = change.before.data() as ExpiringDocumentData
-        const after = change.after.data() as ExpiringDocumentData
-
-        // Did the document lose its expiration?
-        const expirationTask = after.expirationTask
-        const removedExpiresAt = before.expiresAt && !after.expiresAt
-        const removedExpiresIn = before.expiresIn && !after.expiresIn
-        if (expirationTask && (removedExpiresAt || removedExpiresIn)) {
-            const tasksClient = new CloudTasksClient()
-            await tasksClient.deleteTask({ name: expirationTask })
-            await change.after.ref.update({
-                expirationTask: admin.firestore.FieldValue.delete()
-            })
+exports.scheduleWeekTimetable = functions
+    .region('europe-west1')
+    .pubsub
+    .schedule(`0 * * * 1-5`)
+    .timeZone('Europe/Bucharest')
+    .onRun(async ctx => {
+        function convertTZ(date, tzString) {
+            return new Date(date.toLocaleString("en-US", { timeZone: tzString }));
         }
+
+        const convertedDate = convertTZ(new Date(), "Europe/Bucharest")
+        const currentHour = convertedDate.getHours(); // 17
+
+        const storeRef = admin.firestore().collection('stores').doc('CosmoMarket')
+        return admin.firestore().runTransaction(async transaction => {
+            const store = await transaction.get(storeRef)
+            const storeData = store.data()
+
+            if (storeData.isDisabled)
+                return
+
+            if (storeData.openHour == currentHour) {
+                return transaction.update(storeRef, { isOpen: true })
+            }
+
+            if (storeData.closeHour == currentHour) {
+                return transaction.update(storeRef, { isOpen: false })
+            }
+
+            return
+        })
     })

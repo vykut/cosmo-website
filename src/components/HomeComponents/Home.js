@@ -39,8 +39,6 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
     const classes = useStyles()
 
-
-
     function StoreInfo() {
         const cosmoMarketDoc = 'CosmoMarket'
         useFirestoreConnect([{
@@ -116,10 +114,10 @@ export default function Home() {
                                     Orar
                                     </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    Lu - Vi: {storeData.weekTimeTable}
+                                    {`Lu - Vi: ${storeData.openHour} - ${storeData.closeHour}`}
                                 </Typography>
                                 <Typography component='div' variant='h6' color='textPrimary' align='center' className={classes.whiteTextColor}>
-                                    Sa - Du: {storeData.weekendTimeTable}
+                                    {`Sa - Du: ${storeData.weekendOpenHour} - ${storeData.weekendCloseHour}`}
                                 </Typography>
                             </Grid>
                         </Grid>

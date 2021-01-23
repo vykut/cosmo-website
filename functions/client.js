@@ -547,3 +547,34 @@ exports.updateOrderInProgress = functions
     else
       return userRef.update({ orderInProgress: false })
   })
+
+exports.toggleProductsAvailability = functions
+  .region('europe-west1')
+  .firestore.document('categories/{categoryID}')
+  .onWrite(async (change, context) => {
+    let productsRef = admin.firestore().collection('products').where('categories', 'array-contains', context.params.categoryID)
+
+    let enabled = change.after.data().enabled
+
+    let batches = []
+    batches.push(admin.firestore().batch())
+    let batchIndex = 0
+    let counter = 0
+
+    let products = await productsRef.get()
+
+    products.forEach((product) => {
+      batches[batchIndex].update(product.ref, { enabled })
+      counter++
+
+      if (counter == 499) {
+        batchIndex++
+        batches.push(admin.firestore().batch())
+        counter = 0
+      }
+    })
+
+    batches.forEach(async (batch) => await batch.commit())
+  })
+
+
