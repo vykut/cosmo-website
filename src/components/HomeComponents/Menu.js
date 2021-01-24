@@ -6,6 +6,8 @@ import { useState } from 'react'
 import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import { firestoreDB } from '../..';
+import { isEmpty, useFirestoreConnect } from 'react-redux-firebase'
+import { useSelector } from 'react-redux'
 
 export const useStyles = makeStyles((theme) => ({
     nested: {
@@ -53,12 +55,9 @@ export default function CosmoMenu() {
     const history = useHistory()
     const { url } = useRouteMatch();
     const { category, subcategory1, subcategory2 } = useParams()
-
-    const firestore = firestoreDB
-
     const [collapseFilter, setCollapseFilter] = useState(true)
-    const [items, setItems] = useState([])
-    const [title, setTitle] = useState('')
+    var title = ''
+    var items = []
 
     const queryParam = useMemo(() => {
         if (subcategory2)
@@ -72,32 +71,40 @@ export default function CosmoMenu() {
         return ''
     }, [category, subcategory1, subcategory2, url])
 
+    useFirestoreConnect([{
+        collection: 'categories',
+        where: [['enabled', '==', true]]
+    }])
+
+    const categories = useSelector(
+        ({ firestore }) => {
+            const categories = firestore.data.categories
+            if (isEmpty(categories))
+                return []
+            return Object.entries(categories).filter(x => x[1])
+                .map(category => { return { id: category[0], data: category[1] } })
+        }
+    )
+
     //fetch categories
-    useEffect(() => {
-        const categoriesRef = firestore.collection('categories')
-        if (queryParam === 'all') {
-            setTitle('Toate categoriile')
-            fetchCategories(['0klQV3KLSaG9uCWZofCL', 'KIdyISkEMmATZsnAhYpk', 'LY7gSrR5uwYR4t91EOcA'])
-        } else {
-            categoriesRef.doc(queryParam).get()
-                .then((doc) => {
-                    setTitle(doc.data().name)
-                    fetchCategories(doc.data().childrenCategories)
-                })
+
+    if (isEmpty(categories))
+        return null
+
+    if (queryParam === 'all') {
+        title = 'Toate categoriile'
+        const mainCategories = categories?.filter(category => category.data.mainCategory)
+        items = mainCategories || []
+    } else {
+        const category = categories.find(category => category.id === queryParam)
+        if (category) {
+            const childrenCategories = category.data.childrenCategories
+                ?.map(categoryID => categories.find(({ id }) => id === categoryID))
+                .filter(x => x)
+            items = childrenCategories || []
+            title = category.data.name
         }
-        async function fetchCategories(categoriesIDs) {
-            setItems([])
-            if (categoriesIDs) {
-                var promises = []
-                categoriesIDs.forEach((category) => {
-                    promises.push(categoriesRef.doc(category).get())
-                })
-                var docs = (await Promise.all(promises)).map((doc) => { return { id: doc.id, data: doc.data() } })
-                docs = docs.filter(doc => doc.data.enabled)
-                setItems(docs)
-            }
-        }
-    }, [firestore, queryParam])
+    }
 
     const categoryURL = (category) => () => {
         var url = '/categorii'
@@ -140,7 +147,7 @@ export default function CosmoMenu() {
                     {category && <BackButton />}
                     <Collapse in={collapseFilter} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
-                            {items.filter(x => x).map((item, index) => {
+                            {items?.filter(x => x.data).map((item, index) => {
                                 return <InfoListItem button key={index} component={Link} to={categoryURL(item)}>
                                     <Typography variant='body1' className={classes.listItem}>
                                         {item.data.name}

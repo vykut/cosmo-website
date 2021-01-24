@@ -4,7 +4,8 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { useState } from 'react'
 import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
-
+import { isEmpty, useFirestoreConnect } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -44,92 +45,49 @@ const StyledTab = withStyles((theme) => ({
     },
 }))(Tab);
 
-function indexToPath(index) {
-    switch (index) {
-        case 0: return '/acasa'
-        case 1: return '/categorii/0klQV3KLSaG9uCWZofCL'
-        case 2: return '/categorii/LY7gSrR5uwYR4t91EOcA'
-        case 3: return '/categorii/KIdyISkEMmATZsnAhYpk'
-        default: return '/acasa'
-    }
-}
-
-function pathToIndex(path) {
-    switch (path) {
-        case 'acasa': return 0
-        case 'alimente': return 1
-        case 'bauturi': return 2
-        case 'tigari': return 3
-        default: return -1
-    }
-}
 
 export default function AppBarMenu() {
     const classes = useStyles();
-
-    const { url, path } = useRouteMatch()
-    const { category } = useParams()
     const history = useHistory()
 
-    const [tab, setTab] = useState(-1)
+    var tab = -1
 
-    useEffect(() => {
-        if (url === '/acasa') {
-            setTab(0)
-        } else if (category) {
-            setTab(pathToIndex(category))
-        } else {
-            setTab(-1)
+    const mainCategoriesStoreAs = 'mainCategories'
+    useFirestoreConnect(() => [
+        {
+            collection: 'categories',
+            where: [['mainCategory', '==', true], ['enabled', '==', true]],
+            storeAs: mainCategoriesStoreAs
+        } // or `todos/${props.todoId}`
+    ])
+    const categories = useSelector(
+        ({ firestore }) => {
+            const categories = firestore.data[mainCategoriesStoreAs]
+            if (isEmpty(categories))
+                return null
+            return Object.entries(categories).filter(x => x[1])
+                .map(category => { return { id: category[0], data: category[1] } })
         }
-    }, [url, category])
+    )
 
-    history.listen((location) => {
-        if (location === '/acasa') {
-            setTab(0)
-        } else if (category) {
-            setTab(pathToIndex(category))
-        } else {
-            setTab(-1)
-        }
-    })
-
-    const handleTabChange = (e, index) => {
-        history.push(indexToPath(index))
+    const handleTabChange = (e, value) => {
+        if (value === 0)
+            return history.push('/acasa')
+        history.push(`/categorii/${value}`)
     }
 
-    // const handleClick = (e) => {
-    //     history.push(e.target.id)
-    // }
-
     return (
-        <div>
-            <Tabs
-                value={tab}
-
-                onChange={handleTabChange}
-                indicatorColor="secondary"
-                textColor="secondary"
-                variant="scrollable"
-                scrollButtons="auto"
-                className={classes.tabsStyles}
-            >
-                <StyledTab label='Acasă' />
-                <StyledTab label='Alimente' />
-                <StyledTab label='Băuturi' />
-                <StyledTab label='Țigări' />
-            </Tabs>
-            {/* <Button onClick={handleClick} id={'/acasa'} color='secondary' variant='text' style={{ width: 100 }}>
-                Acasă
-            </Button>
-            <Button onClick={handleClick} id='/categorii/0klQV3KLSaG9uCWZofCL' color='secondary' variant='text' style={{ width: 100 }}>
-                Alimente
-            </Button>
-            <Button onClick={handleClick} id='/categorii/LY7gSrR5uwYR4t91EOcA' color='secondary' variant='text' style={{ width: 100 }}>
-                Băuturi
-            </Button>
-            <Button onClick={handleClick} id='/categorii/KIdyISkEMmATZsnAhYpk' color='secondary' variant='text' style={{ width: 100 }}>
-                Țigări
-            </Button> */}
-        </div >
+        <Tabs
+            value={tab}
+            onChange={handleTabChange}
+            indicatorColor="secondary"
+            textColor="secondary"
+            variant="scrollable"
+            scrollButtons="auto"
+            className={classes.tabsStyles}
+        >
+            <StyledTab label='Acasă' value={0} />
+            {categories?.map(category => <StyledTab label={category.data.name} value={category.id} key={category.id} />)}
+        </Tabs>
     );
 }

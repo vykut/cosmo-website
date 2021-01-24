@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
         }
     },
     add: {
-        color: theme.palette.info.main,
+        color: theme.palette.primary.main,
     },
     button: {
         padding: theme.spacing(1, 3),
@@ -173,8 +173,8 @@ export default function FavoritesMenu() {
                             <FavoriteIcon color='error' />
                         </IconButton>
                         {/* <ListItemText component={Link} to={productURL(index)}> */}
-                        <Link component={RouterLink} to={productURL(index)} color='primary'>
-                            <Typography >
+                        <Link component={RouterLink} to={productURL(index)} color='textPrimary'>
+                            <Typography color='textPrimary'>
                                 {product.data.name}
                             </Typography>
                         </Link>
