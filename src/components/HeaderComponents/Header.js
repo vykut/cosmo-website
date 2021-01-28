@@ -155,6 +155,8 @@ export default function Header({ tab, handleTabChange }) {
                     input: classes.inputInput,
                 }}
                 inputProps={{ 'aria-label': 'search' }}
+            // value={searchQuery}
+            // onChange={(e) => setSearchQuery(e.target.value)}
             />
         </div>
     )

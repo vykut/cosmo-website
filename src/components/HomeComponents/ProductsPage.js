@@ -8,6 +8,8 @@ import EuroIcon from '@material-ui/icons/Euro';
 import ProductsPageHeader from './ProductsPageHeader';
 import { useParams, useRouteMatch } from 'react-router-dom';
 import { firestoreDB } from '../..';
+import { isEmpty, useFirestoreConnect } from 'react-redux-firebase';
+import { useSelector } from 'react-redux';
 
 export const useStyles = makeStyles((theme) => ({
     productsGrid: {
@@ -23,13 +25,10 @@ export default function ProductsPage({ sortingKey = 0 }) {
     const { category, subcategory1, subcategory2 } = useParams();
 
     const { url } = useRouteMatch();
-    const firestore = firestoreDB
 
     const classes = useStyles()
 
     const defaultValue = { price: [0, 300] }
-
-    const [products, setProducts] = useState([])
 
     const [pages, setPages] = useState(3)
     const [state, setState] = useState({ sort: sortingKey, numberOfProducts: 24 })
@@ -51,33 +50,50 @@ export default function ProductsPage({ sortingKey = 0 }) {
 
     // set default value on fetch
     //fetch products
-    useEffect(() => {
-        var unsubscribe;
-        var productsRef = firestore.collection('products')
-        if (queryParam === 'all') {
-            unsubscribe = productsRef.onSnapshot(querySnapshot => {
-                var docs = []
-                querySnapshot.forEach(function (doc) {
-                    docs.push({ id: doc.id, data: doc.data() })
-                })
-                setProducts(docs)
-            })
-            return () => unsubscribe()
-        } else {
-            unsubscribe = productsRef.where('categories', 'array-contains', queryParam)
-                .onSnapshot(function (querySnapshot) {
-                    var docs = []
-                    querySnapshot.forEach(function (doc) {
-                        docs.push({ id: doc.id, data: doc.data() })
-                    })
-                    setProducts(docs)
-                })
-            return () => {
-                console.log('productspage - unsubscribed')
-                unsubscribe()
-            }
+    useFirestoreConnect([{
+        collection: 'products'
+    }])
+
+    var products = useSelector(
+        ({ firestore }) => {
+            const products = firestore.data.products
+            if (isEmpty(products))
+                return []
+            return Object.entries(products).filter(x => x[1].name)
+                .map(product => { return { id: product[0], data: product[1] } })
         }
-    }, [firestore, queryParam])
+    )
+
+    if (queryParam !== 'all')
+        products = products.filter(product => product.data.categories.includes(queryParam))
+
+    // useEffect(() => {
+    //     var unsubscribe;
+    //     var productsRef = firestore.collection('products')
+    //     if (queryParam === 'all') {
+    //         unsubscribe = productsRef.onSnapshot(querySnapshot => {
+    //             var docs = []
+    //             querySnapshot.forEach(function (doc) {
+    //                 docs.push({ id: doc.id, data: doc.data() })
+    //             })
+    //             setProducts(docs)
+    //         })
+    //         return () => unsubscribe()
+    //     } else {
+    //         unsubscribe = productsRef.where('categories', 'array-contains', queryParam)
+    //             .onSnapshot(function (querySnapshot) {
+    //                 var docs = []
+    //                 querySnapshot.forEach(function (doc) {
+    //                     docs.push({ id: doc.id, data: doc.data() })
+    //                 })
+    //                 setProducts(docs)
+    //             })
+    //         return () => {
+    //             console.log('productspage - unsubscribed')
+    //             unsubscribe()
+    //         }
+    //     }
+    // }, [firestore, queryParam])
 
     const handleChange = (e, value) => {
         setState({
@@ -178,8 +194,8 @@ export default function ProductsPage({ sortingKey = 0 }) {
                             .filter((product) => {
                                 return product.data.price >= filter.price[0] && product.data.price <= filter.price[1] && product.data.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").includes(searchQuery)
                             })
-                            .map((product, index) => {
-                                return <Grid item key={index}>
+                            .map((product) => {
+                                return <Grid item key={product.id}>
                                     <MemoizedProductBox productID={product.id} />
                                 </Grid>
                             })}

@@ -12,6 +12,12 @@ import { DialogProvider } from '../contexts/DialogContext';
 import { useSelector } from 'react-redux'
 import { isLoaded, isEmpty, useFirestoreConnect } from 'react-redux-firebase'
 import { CartProvider } from '../contexts/CartContext';
+import Footer from './FooterComponents/Footer';
+import TermsAndConditions from './FooterComponents/TermsAndConditions';
+import DocComponent from './FooterComponents/DocComponent';
+import CookiePolitics from './FooterComponents/CookiePolitics';
+import GDPR from './FooterComponents/GDPR';
+import AboutUs from './FooterComponents/AboutUs';
 
 function AuthIsLoaded({ children }) {
   const auth = useSelector(state => state.firebase.auth)
@@ -59,6 +65,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 function App() {
+  // const [searchQuery, setSearchQuery] = useState('')
 
 
   function CosmoBreadcrumbs() {
@@ -67,9 +74,9 @@ function App() {
     const { category, subcategory1, subcategory2, productID } = useParams()
 
     useFirestoreConnect([{
-      collectionGroup: 'categories'
+      collection: 'categories'
     }, {
-      collectionGroup: 'products'
+      collection: 'products'
     }])
 
     const categories = useSelector((state) => state.firestore.data.categories)
@@ -144,8 +151,29 @@ function App() {
               <CosmoBreadcrumbs />
               <ProductsPage />
             </Route>
+            <Route path='/termeni-si-conditii'>
+              <DocComponent title='TERMENI ȘI CONDIȚII'>
+                <TermsAndConditions />
+              </DocComponent>
+            </Route>
+            <Route path='/politica-cookie'>
+              <DocComponent title='POLITICA UTILIZARE COOKIE-URI PE www.cosmomarket.ro'>
+                <CookiePolitics />
+              </DocComponent>
+            </Route>
+            <Route path='/gdpr'>
+              <DocComponent title='GDPR'>
+                <GDPR />
+              </DocComponent>
+            </Route>
+            <Route path='/despre-noi'>
+              <DocComponent title='Despre noi'>
+                <AboutUs />
+              </DocComponent>
+            </Route>
             <Redirect to='/acasa' />
           </Switch>
+          <Footer />
         </DialogProvider>
       </CartProvider>
     </AuthIsLoaded>
